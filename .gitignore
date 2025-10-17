@@ -1,0 +1,13 @@
+*.env
+*.xlsx
+*.xlsm
+!BaseSocios.xlsm
+!DriverCoordenadas.xlsx
+!Universo Directa.xlsm
+!Universo_Indirecta.xlsx
+!Universo Indirecta.xlsm
+*.db
+*.csv
+.vscode/
+**/__pycache__/
+python-3.12.5-emb/

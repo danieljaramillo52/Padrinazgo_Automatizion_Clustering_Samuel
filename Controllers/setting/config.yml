@@ -1,0 +1,52 @@
+paths:
+  insumos: "./Insumos"
+  resultados: "./Resultados"
+
+files:
+  universo_directa: "Universo Directa.xlsm"
+  universo_indirecta: "Universo_Indirecta.xlsm"
+  base_socios: "BaseSocios.xlsm"
+
+sheets:
+  universo_directa: "Maestra"
+  universo_indirecta: 0
+  base_socios: "Consolidado"
+
+dict_cols:
+  universo_directa:
+    funcion_inter: "Función Inter."
+    sociedad: "Sociedad"
+    id_cliente: "Cód. Cliente"
+    cod_local: "Cód. Loc."
+    razon_social: "Razon_Social"
+    nombre_cliente: "Nombre Cliente"
+    nif: "N.I.F."
+    poblacion: "Población"
+
+
+  universo_indirecta:
+    id_cliente: "r_id_cliente"
+    nombre: "cv_nombre_completo_cliente"
+    cod_agente: "r_id_agente_comercial"
+    nom_agente: "cv_nombre_agente_comercial"
+    cod_jefe: "Cod_jefe"
+    nom_jefe: "Nombre_jefe"
+
+  base_socios:
+    id_cliente: "Cod_Cliente"
+    atencion: "Atención"
+    tipo_socio: "Tipo Socios"
+    cod_jefe: "Cod_Jefe"
+    nom_jefe: "Nom_Jefe"
+    cod_agente: "Cod_Agente"
+    nom_agente: "Nom_Agente"
+    cod_vendedor: "Cod_vend ZA"
+
+outputs:
+  directa_xlsx: "directa_resultado.xlsx"
+  directa_csv: "directa_resultado.csv"
+  indirecta_xlsx: "indirecta_resultado.xlsx"
+  indirecta_csv: "indirecta_resultado.csv"
+
+settings:
+  log_file: "./Resultados/proyecto.log"
