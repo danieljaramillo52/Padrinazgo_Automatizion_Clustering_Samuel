@@ -10,4 +10,4 @@
 *.csv
 .vscode/
 **/__pycache__/
-python-3.12.5-emb/
+python-3.12.6-emb/

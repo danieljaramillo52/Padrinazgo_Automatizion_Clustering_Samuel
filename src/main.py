@@ -14,8 +14,8 @@ df_u_directa = df_u_directa.iloc[:, list(range(7)) + [22]]
 
 df_u_indirecta = pd.read_excel(r"C:\Users\samuel.molina\Padrinazgo_Automatizion_Clustering_Samuel\Insumos\Universo Indirecta.xlsm")
 
-#print(df_u_indirecta)
+print(df_u_indirecta)
 
 df_Bas_Socio = pd.read_excel(r"C:\Users\samuel.molina\Padrinazgo_Automatizion_Clustering_Samuel\Insumos\BaseSocios.xlsm")
 
-print(df_Bas_Socio.columns)
+#print(df_Bas_Socio.columns)
