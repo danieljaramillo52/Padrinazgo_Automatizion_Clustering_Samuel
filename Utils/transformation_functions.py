@@ -91,3 +91,35 @@ def merge_ventas_con_universo(
     merged = df.merge(ventas, how=how, left_on=universo_cliente_col, right_on=ventas_cliente_col)
     logger.info(f"Merge entre universo ({len(df)}) y ventas ({len(ventas)}). Resultado: {len(merged)} filas.")
     return merged
+
+
+def Aplicar_Regla_Negocio_Z1_ZA(df_resultado: pd.DataFrame, 
+                        cliente_col: str = 'Cód. Cliente',
+                        z1_col: str = "Cod_vend Z1",
+                        za_col: str = "Cod_vend ZA",
+)-> pd.DataFrame:
+    
+     df_resultado = df_resultado.copy()
+    
+     hay_z1 = df_resultado[z1_col].notna()
+     df_resultado.loc[hay_z1, za_col] = None
+
+     return df_resultado
+
+def Aplicar_regla_Negocio_Socio(df_resultado: pd.DataFrame,
+                                z1_col: str = "Cod_vend Z1",
+                                 za_col: str = "Cod_vend ZA"
+                                )-> pd.DataFrame:
+    
+    df_resultado = df_resultado.copy()
+
+    df_resultado = Aplicar_Regla_Negocio_Z1_ZA(df_resultado, z1_col, za_col)
+
+    tiene_z1 = df_resultado[z1_col].notna()
+    tiene_za = df_resultado[za_col].notna()
+
+    df_resultado['Col_Socio'] = 'NO'
+    df_resultado.loc[tiene_z1 | tiene_za, 'Col_Socio'] = 'SI' 
+
+
+    return df_resultado

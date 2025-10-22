@@ -24,7 +24,7 @@ df_Bas_Socio = pd.read_excel(r"C:\Users\samuel.molina\Padrinazgo_Automatizion_Cl
 columnas_socios = ['Atención', 'Tipo Socios', 'Cod_vend Z1', 'Nom_Vend Z1', 'Cod_vend ZA',
        'Nom_Vend ZA',]
 
-df_u_indirecta_completa_Socios = df_u_directa.merge(
+df_u_directa_completa_Socios = df_u_directa.merge(
     df_Bas_Socio[['Cod_Cliente'] + columnas_socios],
      left_on='Cód. Cliente',      
     right_on='Cod_Cliente', 
@@ -36,4 +36,7 @@ df_u_indirecta_completa_Socios = df_u_directa.merge(
 #print("¿Hay coincidencias?")
 #print(df_u_indirecta_completa[df_u_indirecta_completa['Cod_vend Z1'].notna()].head(10))
 
-df_u_indirecta_completa_Socios = df_u_indirecta_completa_Socios.drop_duplicates(subset = 'Cód. Cliente', keep = 'first' )
+df_u_directa_completa_Socios = df_u_directa_completa_Socios.drop_duplicates(subset = 'Cód. Cliente', keep = 'first' )
+
+#print(df_u_directa_completa_Socios['Cod_vend Z1'].dtype)
+print(df_u_directa_completa_Socios.columns)
