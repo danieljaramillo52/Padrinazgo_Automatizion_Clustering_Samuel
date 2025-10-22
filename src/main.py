@@ -1,4 +1,14 @@
+import sys
+import os
+
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+
 import pandas as pd 
+from Utils import Aplicar_Regla_Negocio_Z1_ZA, Aplicar_regla_Negocio_Socio
+
+
 
 df_u_directa = pd.read_excel(r"C:\Users\samuel.molina\Padrinazgo_Automatizion_Clustering_Samuel\Insumos\Universo Directa.xlsm",
                              sheet_name = "Maestra")
@@ -39,4 +49,11 @@ df_u_directa_completa_Socios = df_u_directa.merge(
 df_u_directa_completa_Socios = df_u_directa_completa_Socios.drop_duplicates(subset = 'Cód. Cliente', keep = 'first' )
 
 #print(df_u_directa_completa_Socios['Cod_vend Z1'].dtype)
-print(df_u_directa_completa_Socios.columns)
+#print(df_u_directa_completa_Socios.columns)
+
+
+df_u_directa_completa_Socios = Aplicar_Regla_Negocio_Z1_ZA(df_u_directa_completa_Socios)
+
+df_u_directa_completa_Socios = Aplicar_regla_Negocio_Socio(df_u_directa_completa_Socios)
+
+print(df_u_directa_completa_Socios)

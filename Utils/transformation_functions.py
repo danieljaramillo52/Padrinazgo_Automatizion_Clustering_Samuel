@@ -1,6 +1,7 @@
 import pandas as pd
-from Utils.general_functions import logger
-
+#from Utils.general_functions import logger
+import logging
+logger = logging.getLogger(__name__)
 
 def eliminar_duplicados_df(df: pd.DataFrame, col_ref: str | list[str]) -> pd.DataFrame:
     """Elimina filas duplicadas según columnas de referencia."""
