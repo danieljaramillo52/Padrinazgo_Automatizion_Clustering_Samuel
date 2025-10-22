@@ -56,4 +56,11 @@ df_u_directa_completa_Socios = Aplicar_Regla_Negocio_Z1_ZA(df_u_directa_completa
 
 df_u_directa_completa_Socios = Aplicar_regla_Negocio_Socio(df_u_directa_completa_Socios)
 
+df_si_socios = df_u_directa_completa_Socios[df_u_directa_completa_Socios['Col_Socio'] == 'SI'].copy()
+df_no_socios = df_u_directa_completa_Socios[df_u_directa_completa_Socios['Col_Socio'] == 'NO'].copy()
+
+df_no_socios = df_no_socios.drop_duplicates(subset = 'Cód. Cliente', keep='first' )
+
+df_u_directa_completa_Socios = pd.concat([df_si_socios, df_no_socios])
+
 print(df_u_directa_completa_Socios)
