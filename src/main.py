@@ -1,22 +1,34 @@
 import sys
 import os
-
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-
 import pandas as pd 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from Utils import Aplicar_Regla_Negocio_Z1_ZA, Aplicar_regla_Negocio_Socio
 
+archivos = [
+    r"C:\Users\samuel.molina\Padrinazgo_Automatizion_Clustering_Samuel\Insumos\Universo Directa.xlsm",
+    r"C:\Users\samuel.molina\Padrinazgo_Automatizion_Clustering_Samuel\Insumos\Universo Indirecta.xlsm",
+    r"C:\Users\samuel.molina\Padrinazgo_Automatizion_Clustering_Samuel\Insumos\BaseSocios.xlsm",
+    r"C:\Users\samuel.molina\Padrinazgo_Automatizion_Clustering_Samuel\Insumos\DriverCoordenadas.xlsx"
+]
+
+for archivo in archivos:
+     if not os.path.exists(archivo):
+        print(f"ERROR: {archivo}")
+     else:
+        print(f"Ok {archivo}")
 
 
-df_u_directa = pd.read_excel(r"C:\Users\samuel.molina\Padrinazgo_Automatizion_Clustering_Samuel\Insumos\Universo Directa.xlsm",
-                             sheet_name = "Maestra", dtype = str)
+df_u_directa = pd.read_excel( r"C:\Users\samuel.molina\Padrinazgo_Automatizion_Clustering_Samuel\Insumos\Universo Directa.xlsm",
+    sheet_name="Maestra", 
+    dtype=str,
+    usecols="A:G,W"  
+)
+
 #print(df_u_directa)
 #print("----------------------------")   #Mostrar las tablas de tabla completa
 #print(df_u_directa.columns)
 
-df_u_directa = df_u_directa.iloc[:, list(range(7)) + [22]]
+
 
 #print(df_u_directa)
 #print("----------------------------")
@@ -46,7 +58,7 @@ df_u_directa_completa_Socios = df_u_directa.merge(
 
 
 #print(df_u_indirecta_completa_socios)
-#print("¿Hay coincidencias?")
+#print("coincidencias")
 #print(df_u_indirecta_completa[df_u_indirecta_completa['Cod_vend Z1'].notna()].head(10))
 
 df_u_directa_completa_Socios = df_u_directa_completa_Socios.drop_duplicates(subset = 'Cód. Cliente', keep = 'first' )
@@ -124,6 +136,17 @@ df_u_indirecta = df_u_indirecta.merge(
 )
 
 df_u_indirecta = df_u_indirecta.drop('llave_compuesta', axis=1)
+
+#df_u_directa_completa_Socios = df_u_directa_completa_Socios.dropna(
+    #subset=['Grado latitud', 'Grad.long.'], 
+   # how='all'  # Elimina si TODAS están vacías
+#)
+
+
+#df_u_directa_completa_Socios = df_u_directa_completa_Socios.dropna(
+    #subset=['Grado latitud', 'Grad.long.'], 
+    #how='any'  # Elimina si ALGUNA está vacía
+#)
 
 # DIRECTA
 df_u_directa_completa_Socios.to_excel(r"C:\Users\samuel.molina\Padrinazgo_Automatizion_Clustering_Samuel\Insumos\Universo_Directa_Resultado.xlsx", index=False)
