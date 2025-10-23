@@ -52,7 +52,7 @@ df_Bas_Socio['Cod_Cliente'] = df_Bas_Socio['Cod_Cliente'].astype(str)
 df_u_directa_completa_Socios = df_u_directa.merge(
     df_Bas_Socio[['Cod_Cliente'] + columnas_socios],
      left_on='Cód. Cliente',      
-    right_on='Cod_Cliente', 
+    right_on='Cod_Cliente',   #eliminar duplicados antes
     how = 'left'
 )
 

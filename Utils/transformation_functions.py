@@ -103,7 +103,7 @@ def Aplicar_Regla_Negocio_Z1_ZA(df_resultado: pd.DataFrame,
      df_resultado = df_resultado.copy()
     
      hay_z1 = df_resultado[z1_col].notna()
-     df_resultado.loc[hay_z1, za_col] = None
+     df_resultado.loc[hay_z1, za_col] = None #Eliminar fila
 
      return df_resultado
 
