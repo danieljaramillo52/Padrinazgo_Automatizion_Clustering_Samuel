@@ -17,20 +17,27 @@ def main():
     config = gf.procesar_configuracion(
         nom_archivo_configuracion="Controllers/setting/config.yml"
     )
-    pd.read_excel(config["Insumos"]["path_insumos"] + config["Insumos"]universo_directa)
+
+    dict_cols = config.get('dict_cols', {})
+
+    id_u_dir = dict_cols['universo_directa']['id_cliente']
+    id_soc = dict_cols['base_socios']['id_cliente']
+
+
+    print('Validando archivos')
 
     for archivo in archivos:
         if not os.path.exists(archivo):
             print(f"ERROR: {archivo}")
         else:
             print(f"Ok {archivo}")
+    print("\n--------------\n")
 
-    df_u_directa = pd.read_excel(
-        r"Insumos\Universo Directa.xlsm",
-        sheet_name="Maestra",
-        dtype=str,
-        usecols="A:G,W",
-    )
+    print("Leyendo Universo Directa\n")
+    #pd.read_excel(config['Insumos']['path_insumos'] + config['Insumos']['universo_directa']['nom_base'])
+
+    full_path_directa = os.path.join(config['Insumos']['path_insumos'], config['Insumos']['universo_directa']['nom_base'])
+    df_u_directa = pd.read_excel(full_path_directa, sheet_name="Maestra", dtype=str, usecols="A:G,W")
 
     # print(df_u_directa)
     # print("----------------------------")   #Mostrar las tablas de tabla completa
@@ -42,9 +49,9 @@ def main():
 
     # print(df_u_indirecta)
 
-    df_Bas_Socio = pd.read_excel(
-        r"C:\Users\samuel.molina\Padrinazgo_Automatizion_Clustering_Samuel\Insumos\BaseSocios.xlsm"
-    )
+    print("Leyendo Base Socios\n")
+    full_path_socios = os.path.join(config['Insumos']['path_insumos'], config['Insumos']['base_socios']['nom_base'])
+    df_Bas_Socio = pd.read_excel(full_path_socios)
 
     # print("Base de socios")
     # print(df_Bas_Socio.columns)
@@ -58,19 +65,23 @@ def main():
         "Nom_Vend ZA",
     ]
 
-    df_u_directa["Cód. Cliente"] = df_u_directa["Cód. Cliente"].astype(str)
-    df_Bas_Socio["Cod_Cliente"] = df_Bas_Socio["Cod_Cliente"].astype(str)
+    df_u_directa[id_u_dir] = df_u_directa[id_u_dir].astype(str) 
+    df_Bas_Socio[id_soc] = df_Bas_Socio[id_soc].astype(str)
+
+    df_u_directa = df_u_directa.drop_duplicates(subset = id_u_dir, keep = 'first')
+    df_Bas_Socio = df_Bas_Socio.drop_duplicates(subset = id_soc, keep = 'first')
 
     df_u_directa_completa_Socios = df_u_directa.merge(
-        df_Bas_Socio[["Cod_Cliente"] + columnas_socios],
-        left_on="Cód. Cliente",
-        right_on="Cod_Cliente",  # eliminar duplicados antes
-        how="left",
+        df_Bas_Socio[[id_soc] + columnas_socios],
+        left_on=id_u_dir,      
+        right_on=id_soc,   #eliminar duplicados antes
+        how = 'left'
     )
 
-    # print(df_u_indirecta_completa_socios)
-    # print("coincidencias")
-    # print(df_u_indirecta_completa[df_u_indirecta_completa['Cod_vend Z1'].notna()].head(10))
+
+    #print(df_u_indirecta_completa_socios)
+    #print("coincidencias")
+    #print(df_u_indirecta_completa[df_u_indirecta_completa['Cod_vend Z1'].notna()].head(10))
 
     df_u_directa_completa_Socios = df_u_directa_completa_Socios.drop_duplicates(
         subset="Cód. Cliente", keep="first"
@@ -118,12 +129,12 @@ def main():
     # print(df_driver_coordenadas.columns)
     # print(df_driver_coordenadas)
 
-    df_coord_dir = df_coord[df_coord["Agente Comercial"].isnull()][
-        ["Cliente", "Grado latitud", "Grad.long."]
-    ]
-    df_coord_ind = df_coord[~df_coord["Agente Comercial"].isnull()][
-        ["Agente Comercial", "Código ECOM", "Grado latitud", "Grad.long."]
-    ]
+    df_coord_dir = df_coord[df_coord['Agente Comercial'].isnull()][['Cliente', 'Grado latitud', 'Grad.long.']]
+    df_coord_ind = df_coord[~df_coord['Agente Comercial'].isnull()][['Agente Comercial', 'Código ECOM', 'Grado latitud', 'Grad.long.']]
+
+
+
+    df_u_directa_completa_Socios = df_u_directa_completa_Socios.drop_duplicates(subset = 'Cód. Cliente' , keep = 'first')
 
     df_u_directa_completa_Socios = df_u_directa_completa_Socios.merge(
         df_coord_dir, left_on="Cód. Cliente", right_on="Cliente", how="left"
