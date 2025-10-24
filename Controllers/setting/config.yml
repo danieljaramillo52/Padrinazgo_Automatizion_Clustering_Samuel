@@ -1,13 +1,34 @@
 Insumos:
-  path_insumos: "Insumos/"
+  path_insumos: 'Insumos/'
   universo_directa:
-    nom_base:  "Universo Directa.xlsm"
-  universo_indirecta:
-    nom_base: "Universo Indirecta.xlsm"
+    nom_base: 'Universo Directa.xlsm'
+  Universo_Indirecta:
+    nom_base: 'Universo Indirecta.xlsm'
   base_socios:
-    nom_base: "BaseSocios.xlsm"
-  drv_cordenadas:
-    nom_base: "base"
+    nom_base: 'BaseSocios.xlsm'
+  drv_coordenadas:
+    nom_base: 'DriverCoordenadas.xlsx'
 
-dict_columnas:
-  cod_cliente : "Cód. Cliente"
+
+dict_cols:
+  universo_directa:
+    funcion_inter: "Función Inter."
+    sociedad: "Sociedad"
+    id_cliente: "Cód. Cliente"
+    cod_local: "Cód. Loc."
+    razon_social: "Razon_Social"
+    nombre_cliente: "Nombre Cliente"
+    nif: "N.I.F."
+    poblacion: "Población"
+
+
+
+  base_socios:
+    id_cliente: "Cod_Cliente"
+    atencion: "Atención"
+    tipo_socio: "Tipo Socios"
+    cod_jefe: "Cod_Jefe"
+    nom_jefe: "Nom_Jefe"
+    cod_agente: "Cod_Agente"
+    nom_agente: "Nom_Agente"
+    cod_vendedor: "Cod_vend ZA"
