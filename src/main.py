@@ -4,6 +4,7 @@ import pandas as pd
 import config_path_routes
 from Utils import general_functions as gf
 from Utils import Aplicar_Regla_Negocio_Z1_ZA, Aplicar_regla_Negocio_Socio
+from Utils import transformation_functions as tf
 
 archivos = [
     r"Insumos\Universo Directa.xlsm",
@@ -18,13 +19,27 @@ def main():
         nom_archivo_configuracion="Controllers/setting/config.yml"
     )
 
+    # Dict columnas.
     dict_cols = config.get("dict_cols", {})
 
+    # Columnas individuales.  (40 columnas = 40 variables)
     id_u_dir = dict_cols["universo_directa"]["id_cliente"]
+    func_int_dir = dict_cols["universo_directa"]["funcion_inter"]
     id_soc = dict_cols["base_socios"]["id_cliente"]
 
+    # Separar columnas totales por archivo
+    cols_univ_dir = dict_cols["universo_directa"]
+    cols_socios = dict_cols["base_socios"]
+
+    # Sleccionar columna única.
+    cols_univ_dir["funcion_inter"]
+    cols_univ_dir["sociedad"]
+    cols_socios["id_cliente"]
+
+    # logger.info reemplaza el print:
     print("Validando archivos")
 
+    # Encapsula en una función validación de archivos. y de columnas / De la hoja.
     for archivo in archivos:
         if not os.path.exists(archivo):
             print(f"ERROR: {archivo}")
@@ -39,9 +54,11 @@ def main():
         config["Insumos"]["path_insumos"],
         config["Insumos"]["universo_directa"]["nom_base"],
     )
+    # Encapsulado en una función.
     df_u_directa = pd.read_excel(
         full_path_directa, sheet_name="Maestra", dtype=str, usecols="A:G,W"
     )
+    # cambiar_tipo_dato_cols_pd
 
     # print(df_u_directa)
     # print("----------------------------")   #Mostrar las tablas de tabla completa
@@ -120,13 +137,13 @@ def main():
 
     # df_u_directa_completa_Socios = df_u_indirecta.merge()
 
-    df_u_indirecta = pd.read_excel(
-        r"C:\Users\samuel.molina\Padrinazgo_Automatizion_Clustering_Samuel\Insumos\Universo Indirecta.xlsm",
-        dtype=str,
-    )
+    # df_u_indirecta = pd.read_excel(
+    #    r"C:\Users\samuel.#molina\Padrinazgo_Automatizion_Clustering_Samuel\Insumos\Universo Indirecta.#xlsm",
+    #    dtype=str,
+    # )
 
     df_coord = pd.read_excel(
-        r"C:\Users\samuel.molina\Padrinazgo_Automatizion_Clustering_Samuel\Insumos\DriverCoordenadas.xlsx",
+        "Insumos/DriverCoordenadas.xlsx",
         dtype=str,
         sheet_name="Base",
     )
@@ -149,10 +166,27 @@ def main():
         df_coord_dir, left_on="Cód. Cliente", right_on="Cliente", how="left"
     )
 
+    cfg_concat_drv = config["Insumos"]["drv_coordenadas"]["concatenar_cols"]
+
+    cfg_concat_un_indir = config["Insumos"]["universo_indirecta"]["concatenar_cols"]
+    df_coord_ind = tf.concatenar_columnas_pd(
+        df=df_coord_ind,
+        cols_elegidas=cfg_concat_drv["cols"],
+        nueva_columna=cfg_concat_drv["nueva_columna"],
+        usar_separador=cfg_concat_drv["usar_separador"],
+        separador=cfg_concat_drv["separador"],
+    )
+
+    df_u_indirecta = tf.concatenar_columnas_pd(
+        df=df_u_indirecta,
+        cols_elegidas=cfg_concat_un_indir["cols"],
+        nueva_columna=cfg_concat_un_indir["nueva_columna"],
+        usar_separador=cfg_concat_un_indir["usar_separador"],
+        separador=cfg_concat_un_indir["separador"],
+    )
+
     df_u_indirecta["llave_compuesta"] = (
-        df_u_indirecta["r_id_agente_comercial"].astype(str)
-        + "_"
-        + df_u_indirecta["r_id_cliente"].astype(str)
+        df_u_indirecta["r_id_agente_comercial"] + "_" + df_u_indirecta["r_id_cliente"]
     )
 
     df_coord_ind["llave_compuesta"] = (

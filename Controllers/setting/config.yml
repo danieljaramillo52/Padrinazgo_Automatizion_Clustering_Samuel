@@ -4,11 +4,21 @@ Insumos:
     nom_base: 'Universo Directa.xlsm'
   Universo_Indirecta:
     nom_base: 'Universo Indirecta.xlsm'
+    concatenar_cols : 
+      cols : ["r_id_agente_comercial", "r_id_cliente"]
+      nueva_columna : "llave_compuesta"
+      usar_separador : True
+      separador : "_"
+
   base_socios:
     nom_base: 'BaseSocios.xlsm'
   drv_coordenadas:
     nom_base: 'DriverCoordenadas.xlsx'
-
+    concatenar_cols : 
+      cols : ["Código ECOM", "Agente Comercial"]
+      nueva_columna : "llave_compuesta"
+      usar_separador : True
+      separador : "_"
 
 dict_cols:
   universo_directa:

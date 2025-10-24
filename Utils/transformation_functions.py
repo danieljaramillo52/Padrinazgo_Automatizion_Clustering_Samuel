@@ -1,23 +1,59 @@
 import pandas as pd
-#from Utils.general_functions import logger
+from typing import List
+
+# from Utils.general_functions import logger
 import logging
+
 logger = logging.getLogger(__name__)
+
 
 def eliminar_duplicados_df(df: pd.DataFrame, col_ref: str | list[str]) -> pd.DataFrame:
     """Elimina filas duplicadas según columnas de referencia."""
-    inicial = len(df)
     df_sin_duplicados = df.drop_duplicates(subset=col_ref, keep="first")
-    eliminados = inicial - len(df_sin_duplicados)
-    logger.info(f"Eliminados {eliminados} duplicados basados en {col_ref}")
     return df_sin_duplicados
 
 
-def limpiar_datos_ventas(df: pd.DataFrame, cliente_col: str, marca_col: str) -> pd.DataFrame:
+def limpiar_datos_ventas(
+    df: pd.DataFrame, cliente_col: str, marca_col: str
+) -> pd.DataFrame:
     """Limpia y normaliza columnas clave de ventas."""
     df = df.copy()
     df[cliente_col] = df[cliente_col].astype(str).str.strip()
     df[marca_col] = df[marca_col].astype(str).str.strip()
     return df.dropna(subset=[cliente_col, marca_col])
+
+
+def eliminar_duplicados_serie(serie: pd.Series, keep: str = "first") -> pd.Series:
+    """
+    Elimina valores duplicados de una serie de pandas y registra el resultado.
+
+    Esta función elimina los valores duplicados de una `pd.Series`,
+    conservando por defecto la primera ocurrencia de cada valor.
+    Registra un mensaje de éxito si se eliminan duplicados o de
+    advertencia si no se detecta ninguno.
+
+    Args:
+        serie (pd.Series): Serie sobre la cual se eliminarán los duplicados.
+        keep (str, opcional): Estrategia de conservación. Puede ser:
+            - "first": conserva la primera ocurrencia (por defecto).
+            - "last": conserva la última ocurrencia.
+            - False: elimina todas las ocurrencias duplicadas.
+
+    Returns:
+        pd.Series: Serie resultante sin valores duplicados.
+    """
+    longitud_inicial = len(serie)
+    serie_sin_duplicados = serie.drop_duplicates(keep=keep)
+    eliminados = longitud_inicial - len(serie_sin_duplicados)
+
+    if eliminados > 0:
+        logger.info(f"Se eliminaron {eliminados} valores duplicados de la serie.")
+    else:
+        logger.warning(
+            "No se detectaron duplicados en la serie; no se realizaron cambios."
+        )
+
+    return serie_sin_duplicados
 
 
 def agregar_ventas_por_cliente_y_marca(
@@ -39,25 +75,47 @@ def agregar_ventas_por_cliente_y_marca(
     for col in [pesos_col, kg_col]:
         df[col] = pd.to_numeric(df.get(col, 0), errors="coerce").fillna(0)
 
-    grp = df.groupby([cliente_col, marca_col], dropna=False).agg(
-        ventas_pesos=(pesos_col, "sum"),
-        ventas_kg=(kg_col, "sum"),
-    ).reset_index()
+    grp = (
+        df.groupby([cliente_col, marca_col], dropna=False)
+        .agg(
+            ventas_pesos=(pesos_col, "sum"),
+            ventas_kg=(kg_col, "sum"),
+        )
+        .reset_index()
+    )
 
-    pivot_pesos = grp.pivot_table(index=cliente_col, columns=marca_col, values="ventas_pesos", fill_value=0)
-    pivot_kg = grp.pivot_table(index=cliente_col, columns=marca_col, values="ventas_kg", fill_value=0)
+    pivot_pesos = grp.pivot_table(
+        index=cliente_col, columns=marca_col, values="ventas_pesos", fill_value=0
+    )
+    pivot_kg = grp.pivot_table(
+        index=cliente_col, columns=marca_col, values="ventas_kg", fill_value=0
+    )
 
-    pivot_pesos.columns = [f"ventas_{str(c).strip().lower().replace(' ', '_')}_pesos" for c in pivot_pesos.columns]
-    pivot_kg.columns = [f"ventas_{str(c).strip().lower().replace(' ', '_')}_kg" for c in pivot_kg.columns]
+    pivot_pesos.columns = [
+        f"ventas_{str(c).strip().lower().replace(' ', '_')}_pesos"
+        for c in pivot_pesos.columns
+    ]
+    pivot_kg.columns = [
+        f"ventas_{str(c).strip().lower().replace(' ', '_')}_kg"
+        for c in pivot_kg.columns
+    ]
 
-    totales = df.groupby(cliente_col).agg(total_pesos=(pesos_col, "sum"), total_kg=(kg_col, "sum"))
+    totales = df.groupby(cliente_col).agg(
+        total_pesos=(pesos_col, "sum"), total_kg=(kg_col, "sum")
+    )
 
-    resultado = totales.join(pivot_pesos, how="left").join(pivot_kg, how="left").fillna(0)
+    resultado = (
+        totales.join(pivot_pesos, how="left").join(pivot_kg, how="left").fillna(0)
+    )
 
     if all(v is not None for v in [start_year, end_year, start_month, end_month]):
         start_date = pd.Timestamp(start_year, start_month, 1)
         end_date = pd.Timestamp(end_year, end_month, 1)
-        months = (end_date.year - start_date.year) * 12 + (end_date.month - start_date.month) + 1
+        months = (
+            (end_date.year - start_date.year) * 12
+            + (end_date.month - start_date.month)
+            + 1
+        )
         months = max(1, months)
         logger.info(
             f"Calculando promedios mensuales usando periodo {start_date.strftime('%Y-%m')} - "
@@ -89,29 +147,34 @@ def merge_ventas_con_universo(
     df[universo_cliente_col] = df[universo_cliente_col].astype(str).str.strip()
     ventas[ventas_cliente_col] = ventas[ventas_cliente_col].astype(str).str.strip()
 
-    merged = df.merge(ventas, how=how, left_on=universo_cliente_col, right_on=ventas_cliente_col)
-    logger.info(f"Merge entre universo ({len(df)}) y ventas ({len(ventas)}). Resultado: {len(merged)} filas.")
+    merged = df.merge(
+        ventas, how=how, left_on=universo_cliente_col, right_on=ventas_cliente_col
+    )
+    logger.info(
+        f"Merge entre universo ({len(df)}) y ventas ({len(ventas)}). Resultado: {len(merged)} filas."
+    )
     return merged
 
 
-def Aplicar_Regla_Negocio_Z1_ZA(df_resultado: pd.DataFrame, 
-                        cliente_col: str = 'Cód. Cliente',
-                        z1_col: str = "Cod_vend Z1",
-                        za_col: str = "Cod_vend ZA",
-)-> pd.DataFrame:
-    
-     df_resultado = df_resultado.copy()
-    
-     hay_z1 = df_resultado[z1_col].notna()
-     df_resultado.loc[hay_z1, za_col] = None #Eliminar fila
+def Aplicar_Regla_Negocio_Z1_ZA(
+    df_resultado: pd.DataFrame,
+    cliente_col: str = "Cód. Cliente",
+    z1_col: str = "Cod_vend Z1",
+    za_col: str = "Cod_vend ZA",
+) -> pd.DataFrame:
 
-     return df_resultado
+    df_resultado = df_resultado.copy()
 
-def Aplicar_regla_Negocio_Socio(df_resultado: pd.DataFrame,
-                                z1_col: str = "Cod_vend Z1",
-                                 za_col: str = "Cod_vend ZA"
-                                )-> pd.DataFrame:
-    
+    hay_z1 = df_resultado[z1_col].notna()
+    df_resultado.loc[hay_z1, za_col] = None  # Eliminar fila
+
+    return df_resultado
+
+
+def Aplicar_regla_Negocio_Socio(
+    df_resultado: pd.DataFrame, z1_col: str = "Cod_vend Z1", za_col: str = "Cod_vend ZA"
+) -> pd.DataFrame:
+
     df_resultado = df_resultado.copy()
 
     df_resultado = Aplicar_Regla_Negocio_Z1_ZA(df_resultado, z1_col, za_col)
@@ -119,8 +182,61 @@ def Aplicar_regla_Negocio_Socio(df_resultado: pd.DataFrame,
     tiene_z1 = df_resultado[z1_col].notna()
     tiene_za = df_resultado[za_col].notna()
 
-    df_resultado['Col_Socio'] = 'NO'
-    df_resultado.loc[tiene_z1 | tiene_za, 'Col_Socio'] = 'SI' 
-
+    df_resultado["Col_Socio"] = "NO"
+    df_resultado.loc[tiene_z1 | tiene_za, "Col_Socio"] = "SI"
 
     return df_resultado
+
+
+def concatenar_columnas_pd(
+    df: pd.DataFrame,
+    cols_elegidas: List[str],
+    nueva_columna: str,
+    usar_separador: bool = False,  # 🔹 Nuevo parámetro opcional (False por defecto)
+    separador: str = " : ",  # 🔹 Separador por defecto (espacio)
+) -> pd.DataFrame:
+    """
+    Concatena las columnas especificadas y agrega el resultado como una nueva columna al DataFrame.
+
+    Parámetros:
+    - dataframe (pd.DataFrame): DataFrame del cual se concatenarán las columnas.
+    - cols_elegidas (list): Lista de nombres de las columnas a concatenar.
+    - nueva_columna (str): Nombre de la nueva columna que contendrá el resultado de la concatenación.
+    - usar_separador (bool): Si es True, concatena las columnas con el separador definido en 'separador'.
+    - separador (str): Caracter usado para separar las columnas concatenadas (por defecto, espacio).
+
+    Retorna:
+    - pd.DataFrame: DataFrame con la nueva columna agregada.
+    """
+    try:
+        # Verificar si dataframe es un DataFrame de pandas
+        if not isinstance(df, pd.DataFrame):
+            raise TypeError("El argumento 'dataframe' debe ser un DataFrame de pandas.")
+
+        # Verificar si las columnas especificadas existen en el DataFrame
+        for col in cols_elegidas:
+            if col not in df.columns:
+                raise KeyError(f"La columna '{col}' no existe en el DataFrame.")
+
+        df_copy = df.copy()
+
+        # 🔹 Si usar_separador es True, concatenar con separador. Si no, concatenar normal.
+        if usar_separador:
+            df_copy.loc[:, nueva_columna] = (
+                df_copy[cols_elegidas].fillna("").agg(separador.join, axis=1)
+            )
+        else:
+            df_copy.loc[:, nueva_columna] = (
+                df_copy[cols_elegidas].fillna("").agg("".join, axis=1)
+            )
+
+        # Registrar el proceso
+        logger.info(
+            f"Columnas '{', '.join(cols_elegidas)}' concatenadas {'con separador' if usar_separador else 'sin separador'} y almacenadas en '{nueva_columna}'."
+        )
+
+        return df_copy
+
+    except Exception as e:
+        logger.error(f"Error en la concatenación de columnas: {e}")
+        return df
