@@ -22,10 +22,9 @@ def main():
     # Dict columnas.
     dict_cols = config.get("dict_cols", {})
 
-    # Columnas individuales.  (40 columnas = 40 variables)
-    id_u_dir = dict_cols["universo_directa"]["id_cliente"]
-    func_int_dir = dict_cols["universo_directa"]["funcion_inter"]
-    id_soc = dict_cols["base_socios"]["id_cliente"]
+    #col_directa
+    id_u_dir = dict_cols['universo_directa']['id_cliente']
+    id_soc = dict_cols['base_socios']['id_cliente']
 
     # Separar columnas totales por archivo
     cols_univ_dir = dict_cols["universo_directa"]
