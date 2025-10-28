@@ -21,6 +21,11 @@ Insumos:
       usar_separador : True
       separador : "_"
 
+
+outputs: 
+  indirecta: "Resultados/Universo_Indirecta_Resultado.xlsx"
+  directa: "Resultados/Universo_Directa_Resultado.xlsx"
+
 dict_cols:
   universo_directa:
     funcion_inter: "Función Inter."
