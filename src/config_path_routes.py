@@ -1,5 +1,7 @@
 import os
 import sys
+from typing import List
+from loguru import logger
 
 
 class ConfigPathRoutes:
@@ -27,3 +29,4 @@ class ConfigPathRoutes:
 
 cnf_path_routes = ConfigPathRoutes()
 cnf_path_routes._modificar_path()
+

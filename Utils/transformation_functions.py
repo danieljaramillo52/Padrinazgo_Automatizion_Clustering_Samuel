@@ -157,11 +157,66 @@ def merge_ventas_con_universo(
 
 
 def Aplicar_Regla_Negocio_Z1_ZA(
+    
     df_resultado: pd.DataFrame,
     cliente_col: str = "Cód. Cliente",
     z1_col: str = "Cod_vend Z1",
     za_col: str = "Cod_vend ZA",
 ) -> pd.DataFrame:
+    
+
+    """
+    Aplica regla de negocio que elimina vendedores ZA cuando existe vendedor Z1.
+    
+    Si un cliente tiene asignado un vendedor Z1, se elimina el vendedor ZA asociado,
+    priorizando la venta Z1 sobre la ZA.
+    
+    Parámetros:
+    -----------
+    df_resultado : pd.DataFrame
+        DataFrame con información de clientes y vendedores.
+        
+    cliente_col : str, optional
+        Nombre de la columna que contiene el ID del cliente.
+        Por defecto: "Cód. Cliente"
+        
+    z1_col : str, optional
+        Nombre de la columna que contiene el código del vendedor Z1.
+        Por defecto: "Cod_vend Z1"
+        
+    za_col : str, optional
+        Nombre de la columna que contiene el código del vendedor ZA.
+        Por defecto: "Cod_vend ZA"
+    
+    Retorna:
+    --------
+    pd.DataFrame
+        DataFrame con la regla de negocio aplicada. Los vendedores ZA se establecen
+        en None cuando existe un vendedor Z1 para el mismo cliente.
+    
+    Lógica:
+    -------
+    1. Identifica todos los clientes que tienen vendedor Z1 asignado (no nulo)
+    2. Para esos clientes, elimina el vendedor ZA (lo pone en None)
+    3. Los clientes sin vendedor Z1 mantienen su vendedor ZA
+    
+    Ejemplo:
+    --------
+     df = pd.DataFrame({
+         'Cód. Cliente': [1, 2, 3],
+        'Cod_vend Z1': [101, None, 102],
+         'Cod_vend ZA': [201, 202, 203]
+     })
+        resultado = Aplicar_Regla_Negocio_Z1_ZA(df)
+        resultado['Cod_vend ZA'].tolist()
+        [None, 202, None]
+    
+    Notas:
+    ------
+    - La función crea una copia del DataFrame, no modifica el original
+    - Solo afecta la columna ZA cuando hay Z1 presente
+    - Los valores nulos en Z1 se respetan y no afectan a ZA
+    """
 
     df_resultado = df_resultado.copy()
 
@@ -174,6 +229,58 @@ def Aplicar_Regla_Negocio_Z1_ZA(
 def Aplicar_regla_Negocio_Socio(
     df_resultado: pd.DataFrame, z1_col: str = "Cod_vend Z1", za_col: str = "Cod_vend ZA"
 ) -> pd.DataFrame:
+    
+
+    """
+    Aplica regla de negocio para clasificar clientes como socios o no socios.
+    
+    Primero aplica la regla Z1_ZA (elimina ZA si existe Z1), luego clasifica
+    cada cliente como "SI" (es socio) o "NO" (no es socio) basado en si tiene
+    vendedor Z1 o ZA asignado.
+    
+    Parámetros:
+    -----------
+    df_resultado : pd.DataFrame
+        DataFrame con información de clientes y vendedores.
+        
+    z1_col : str, optional
+        Nombre de la columna que contiene el código del vendedor Z1.
+        Por defecto: "Cod_vend Z1"
+        
+    za_col : str, optional
+        Nombre de la columna que contiene el código del vendedor ZA.
+        Por defecto: "Cod_vend ZA"
+    
+    Retorna:
+    --------
+    pd.DataFrame
+        DataFrame con nueva columna "Col_Socio" que indica si el cliente es socio.
+        Valores: "SI" (tiene Z1 o ZA) o "NO" (no tiene ninguno).
+    
+    Lógica:
+    -------
+    1. Aplica Aplicar_Regla_Negocio_Z1_ZA() para priorizar Z1 sobre ZA
+    2. Identifica clientes con Z1 asignado
+    3. Identifica clientes con ZA asignado
+    4. Marca como "SI" si tiene Z1 O ZA (al menos uno)
+    5. Marca como "NO" si no tiene ni Z1 ni ZA
+    
+    Ejemplo:
+    --------
+    df = pd.DataFrame({
+         'Cod_vend Z1': [101, None, None],
+         'Cod_vend ZA': [None, 202, None]
+     })
+     resultado = Aplicar_regla_Negocio_Socio(df)
+     resultado['Col_Socio'].tolist()
+    ['SI', 'SI', 'NO']
+    
+    Notas:
+    ------
+    - La función crea una copia del DataFrame, no modifica el original
+    - Un cliente es socio si tiene Z1, ZA, o ambos
+    - Un cliente NO es socio solo si no tiene Z1 ni ZA
+    """
 
     df_resultado = df_resultado.copy()
 

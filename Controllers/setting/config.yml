@@ -2,7 +2,7 @@ Insumos:
   path_insumos: 'Insumos/'
   universo_directa:
     nom_base: 'Universo Directa.xlsm'
-  Universo_Indirecta:
+  universo_indirecta:
     nom_base: 'Universo Indirecta.xlsm'
     concatenar_cols : 
       cols : ["r_id_agente_comercial", "r_id_cliente"]
@@ -12,6 +12,7 @@ Insumos:
 
   base_socios:
     nom_base: 'BaseSocios.xlsm'
+  
   drv_coordenadas:
     nom_base: 'DriverCoordenadas.xlsx'
     concatenar_cols : 
@@ -30,7 +31,7 @@ dict_cols:
     nombre_cliente: "Nombre Cliente"
     nif: "N.I.F."
     poblacion: "Población"
-
+    
 
 
   base_socios:
@@ -42,3 +43,21 @@ dict_cols:
     cod_agente: "Cod_Agente"
     nom_agente: "Nom_Agente"
     cod_vendedor: "Cod_vend ZA"
+
+
+  universo_indirecta:
+    id_cliente: "r_id_cliente"
+    nombre: "cv_nombre_completo_cliente"
+    cod_agente: "r_id_agente_comercial"
+    nom_agente: "cv_nombre_agente_comercial"
+    cod_jefe: "Cod_jefe"
+    nom_jefe: "Nombre_jefe"
+
+  drv_coordenadas:
+    id_cliente: "Cliente"
+    Grado_latitud: "Grado latitud"
+    Grado_longitud: "Grad.long."
+    cod_ECOM: "Código ECOM"
+    cod_agen_comer: "Agente Comercial"
+
+  
