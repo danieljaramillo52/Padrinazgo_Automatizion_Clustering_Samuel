@@ -1,5 +1,5 @@
 *.env
-.xlsx
+*.xlsx
 *.xlsm
 !BaseSocios.xlsm
 !DriverCoordenadas.xlsx
