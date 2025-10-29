@@ -77,3 +77,12 @@ Archivos de Ventas:
 
 - Carpetas Directa e Indirecta:  (Dentro de los insumos)
 
+Leer todos los archivos de ventas de la directa.  Y unirlos todos. (Concatenar)
+
+- Recomendación: filtrar por extensión y no por nombre del archivo. 
+
+- Directorio: "Insumos/Directa/"
+
+- Hacer un proceso para leer todos los archivos de la carpeta o iterar sobre todos los archivos. 
+
+Cliente 	v$ Comarritco 	vKg Comarrico 	VkG Doria	V$Doria (Ventas totates)
