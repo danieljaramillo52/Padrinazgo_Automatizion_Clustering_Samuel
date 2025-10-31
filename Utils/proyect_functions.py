@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from Utils.general_functions import logger, cargar_multiples_archivos
 from Utils.transformation_functions import agregar_ventas_por_cliente_y_marca, merge_ventas_con_universo
-
+    
 
 def complementar_directa(universo_df: pd.DataFrame, socios_df: pd.DataFrame, dict_cols: dict) -> pd.DataFrame:
     """

@@ -9,6 +9,10 @@ Insumos:
       nueva_columna : "llave_compuesta"
       usar_separador : True
       separador : "_"
+  Path_Directa:
+    path: 'Directa/'
+    patron: '*.xlsx'
+
 
   base_socios:
     nom_base: 'BaseSocios.xlsm'

@@ -1,7 +1,7 @@
 from loguru import logger
 import yaml
 import os
-from typing import Dict
+from typing import Dict, List
 import pandas as pd
 from pathlib import Path
 
@@ -126,3 +126,45 @@ def exportar_a_excel(
     except Exception as e:
         logger.error(f"❌ Error exportando '{ruta_archivo}': {e}")
         raise
+
+
+
+def leer_excel_directa  (
+    ruta: str,
+    patron: str = "*.xlsx",
+    dtype: str = None,
+   
+) -> List[pd.DataFrame]:
+    
+
+    if not os.path.exists(ruta):  
+        raise FileNotFoundError(f"El directorio '{ruta}' no existe")
+    
+    if not os.path.isdir(ruta):  # ✅ Usar os.path
+        raise NotADirectoryError(f"'{ruta}' no es un directorio")
+    
+    extension = patron.replace("*", "")
+
+    archivos = sorted([
+        os.path.join(ruta, f)
+        for f in os.listdir(ruta)
+        if f.lower().endswith(extension)  
+    ])
+
+    dataframes = []
+
+    for archivo in archivos:
+        try:
+            df = pd.read_excel(archivo, dtype=str)
+            dataframes.append(df)
+        except Exception as e:
+            raise Exception(f"Error precesando '{archivo}': {e}")
+        
+    if not dataframes:
+        raise ValueError("No se pudo leer ningún archivo exitosamente")
+    
+    return dataframes
+            
+
+
+

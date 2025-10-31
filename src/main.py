@@ -232,6 +232,14 @@ def main():
         encoding="utf-8",
     )
 
+    full_path_dir_directa = os.path.join(
+    config["Insumos"]["path_insumos"],
+    config["Insumos"]["Path_Directa"]["path"]
+    )
+    patron = config["Insumos"]["Path_Directa"]["patron"]
+
+    dfs_dir_directa = gf.leer_excel_directa(full_path_dir_directa, patron=patron, dtype=str)
+
 
 if __name__ == "__main__":
     main()
