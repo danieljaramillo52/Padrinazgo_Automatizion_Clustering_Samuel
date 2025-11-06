@@ -27,13 +27,6 @@ def procesar_configuracion(nom_archivo_configuracion: str) -> dict:
     return configuracion_yaml
 
 
-archivos = [
-    r"Insumos\Universo Directa.xlsm",
-    r"Insumos\Universo Indirecta.xlsm",
-    r"Insumos\BaseSocios.xlsm",
-    r"Insumos\DriverCoordenadas.xlsx",
-]
-
 
 def validar_archivos(archivos: Dict[str, str]):
     """
@@ -53,6 +46,18 @@ def validar_archivos(archivos: Dict[str, str]):
             )
         else:
             logger.info(f"Ok: {archivo} encontrado correctamente")
+
+def validar_dir(path) -> bool:
+    if not os.path.exists(path):  
+        logger.error(f"El directorio '{path}' no existe")
+        return False
+    
+    if not os.path.isdir(path):  
+        logger.error(f"'{path}' no es un directorio")
+        return False 
+    
+    logger.info(f"'{path}' existe y es un directorio válido")
+    return True
 
 
 def leer_excel_columnas(
@@ -129,20 +134,16 @@ def exportar_a_excel(
 
 
 
-def leer_excel_directa  (
+def leer_excels_dir  (
     ruta: str,
-    patron: str = "*.xlsx",
+    patron: str,
     dtype: str = None,
    
 ) -> List[pd.DataFrame]:
     
-
-    if not os.path.exists(ruta):  
-        raise FileNotFoundError(f"El directorio '{ruta}' no existe")
-    
-    if not os.path.isdir(ruta):  
-        raise NotADirectoryError(f"'{ruta}' no es un directorio")
-    
+    if not validar_dir(ruta):
+        return
+  
     extension = patron.replace("*", "")
 
     archivos = sorted([
@@ -155,7 +156,7 @@ def leer_excel_directa  (
 
     for archivo in archivos:
         try:
-            df = pd.read_excel(archivo, dtype=str)
+            df = pd.leer_excel_columnas(archivo, dtype=str)
             dataframes.append(df)
         except Exception as e:
             raise Exception(f"Error precesando '{archivo}': {e}")
