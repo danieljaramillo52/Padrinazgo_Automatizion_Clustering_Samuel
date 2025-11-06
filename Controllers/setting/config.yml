@@ -12,7 +12,9 @@ Insumos:
   Path_Directa:
     path: 'Directa/'
     patron: '*.xlsx'
-
+  Path_Indirecta:
+    path: 'Indirecta/'
+    sheet: 'Base'
 
   base_socios:
     nom_base: 'BaseSocios.xlsm'

@@ -81,7 +81,7 @@ Leer todos los archivos de ventas de la directa.  Y unirlos todos. (Concatenar)
 
 - Recomendación: filtrar por extensión y no por nombre del archivo. 
 
-- Directorio: "Insumos/Directa/"
+- Directorio: "Insumos/Directa/"    
 
 - Hacer un proceso para leer todos los archivos de la carpeta o iterar sobre todos los archivos. 
 

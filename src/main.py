@@ -232,14 +232,71 @@ def main():
         encoding="utf-8",
     )
 
+ 
+
+    
+    #####################################
+    #lectura y concatenación de Insumos/directa
+    ######################################
+
+
     full_path_dir_directa = os.path.join(
     config["Insumos"]["path_insumos"],
     config["Insumos"]["Path_Directa"]["path"]
     )
     patron = config["Insumos"]["Path_Directa"]["patron"]
+    
 
-    dfs_dir_directa = gf.leer_excel_directa(full_path_dir_directa, patron=patron, dtype=str)
+    dfs_ventas_directa = gf.leer_excel_directa(full_path_dir_directa, patron=patron, dtype=str) #Lista 
 
+    df_ventas_directa = tf.concatenar_vertical(dfs_ventas_directa) #Dataframe 
+
+
+    ######################################
+    #lectura y concatencioón de Insumos/indirecta
+    ######################################
+
+
+    full_path_dir_indirecta = os.path.join(
+    config["Insumos"]["path_insumos"],
+    config["Insumos"]["Path_Indirecta"]["path"],
+    )
+    
+    sheet_name = config["Insumos"]["Path_Indirecta"]["sheet"]
+
+    dfs_ventas_indirecta = gf.leer_excel_indirecta(full_path_dir_indirecta, sheet_name)
+    
+
+    df_vts_ind = pd.read_excel("Insumos/Indirecta/BDVentasIndirecta_2022.12_11.xlsx")
+    
+    df_vts_ind = df_vts_ind.rename(
+    columns={
+        "Unnamed: 0": "Agente Comercial",
+        "Unnamed: 1": "Código ECOM",
+        "Unnamed: 2": "Marca",
+    },
+    inplace=False,
+    )
+
+    marcas = ['Comarrico', 'Doria', 'Monticello']
+
+    for marca in marcas:
+        ventas_cop = []
+        ventas_kg = []
+
+    for col in df_vts_ind:
+        if col not in ["Agente Comercial", "Código ECOM", "Marca"]:
+            dato_kg_peso = df_vts_ind[col][1]
+            mes = df_vts_ind[col][0]
+   
+     
+            if marca:     
+                if dato_kg_peso == "COP":
+                    nuevo_nombre = f"V$ {marca}"  # necesitas definir de dónde sale marca
+                elif dato_kg_peso == "KG":
+                     nuevo_nombre = f"VKg {marca}"
+
+            df_vts_ind[nuevo_nombre] = df_vts_ind[col][3:]
 
 if __name__ == "__main__":
     main()

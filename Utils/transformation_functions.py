@@ -272,3 +272,14 @@ def concatenar_columnas_pd(
     except Exception as e:
         logger.error(f"Error en la concatenación de columnas: {e}")
         return df
+
+
+def concatenar_vertical(
+        dataframes: List,
+
+)-> pd.DataFrame:
+
+    df_concatenado = pd.concat(dataframes, ignore_index=True)
+
+
+    return df_concatenado

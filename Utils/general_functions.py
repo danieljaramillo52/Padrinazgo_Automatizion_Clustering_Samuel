@@ -140,7 +140,7 @@ def leer_excel_directa  (
     if not os.path.exists(ruta):  
         raise FileNotFoundError(f"El directorio '{ruta}' no existe")
     
-    if not os.path.isdir(ruta):  # ✅ Usar os.path
+    if not os.path.isdir(ruta):  
         raise NotADirectoryError(f"'{ruta}' no es un directorio")
     
     extension = patron.replace("*", "")
@@ -167,4 +167,41 @@ def leer_excel_directa  (
             
 
 
+
+def leer_excel_indirecta(
+        path: str,
+        sheet_name: str,
+        dtype: str = None,
+        
+
+) -> List[pd.DataFrame]:
+    
+    if not os.path.exists(path):  
+        raise FileNotFoundError(f"El directorio '{path}' no existe")
+    
+    if not os.path.isdir(path):  
+        raise NotADirectoryError(f"'{path}' no es un directorio")
+    
+
+    archivos = sorted([
+        os.path.join(path, f)
+        for f in os.listdir(path)
+        if os.path.isfile(os.path.join(path, f)) 
+    ])
+
+    dataframes = []
+
+    for archivo in archivos:
+        try:
+            df = pd.read_excel(archivo, dtype=str, sheet_name = sheet_name)
+            dataframes.append(df)
+        except Exception as e:
+            raise Exception(f"Error precesando '{archivo}': {e}")
+        
+    if not dataframes:
+        raise ValueError("No se pudo leer ningún archivo exitosamente")
+    
+    return dataframes
+    
+        
 
