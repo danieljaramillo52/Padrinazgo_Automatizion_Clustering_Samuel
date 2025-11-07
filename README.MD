@@ -86,3 +86,31 @@ Leer todos los archivos de ventas de la directa.  Y unirlos todos. (Concatenar)
 - Hacer un proceso para leer todos los archivos de la carpeta o iterar sobre todos los archivos. 
 
 Cliente 	v$ Comarritco 	vKg Comarrico 	VkG Doria	V$Doria (Ventas totates)
+
+
+
+![alt text](image.png)
+
+
+
+(Lo que mas pueda viernes.)
+
+Pendiente: Martes.
+- Arreglar formato de la indirecta
+- Ajustar Directa. (Utilizar la función lectura_excel_columnas para  leer cada df)
+- No duplicar logica de leer varios archivos / no  haga dos funciones para  cada modelo dir indir . (retorna : Lista archivos) para directa e indireta. 
+- Concatenarlos. Directa de una / Indirecta arreglar formato indirecta pasar a formato directa.
+
+- 
+FILTRA POR MARCA: Y RENOMBRAR LAS COLUMNAS DE VENTA SEGÚN LA MARCA. 
+
+Cliente (AGRUPAR POR CLIENTE (DIRECTA)  /  AC Y ECOM (INDIRECTA)). 
+
+v$ Comarritco 	vKg Comarrico 	VkG Doria	V$Doria 
+
+
+- ADICIONAL SAQUE LAS VALIDACIONES EN UN MÉTODO APARTE. Valide primero dir / archivo etc.
+
+
+
+
