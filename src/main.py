@@ -213,6 +213,7 @@ def main():
     full_path_dir_directa = os.path.join(
         config["Insumos"]["path_insumos"], config["Insumos"]["Path_Directa"]["path"]
     )
+
     patron = config["Insumos"]["Path_Directa"]["patron"]
 
     dfs_ventas_directa = gf.leer_excels_dir(
@@ -232,9 +233,11 @@ def main():
 
     sheet_name = config["Insumos"]["Path_Indirecta"]["sheet"]
 
-    dfs_ventas_indirecta = gf.leer_excels_dir(full_path_dir_indirecta, patron=None)
+    dfs_ventas_indirecta = gf.leer_excels_dir(full_path_dir_indirecta, patron=patron)
 
     df_vts_ind = pd.read_excel("Insumos/Indirecta/BDVentasIndirecta_2022.12_11.xlsx")
+
+    df_coord_ind = df_vts_ind.copy()
 
     df_vts_ind = df_vts_ind.rename(
         columns={
@@ -245,10 +248,10 @@ def main():
         inplace=False,
     )
 
-    df_vts_ind = df_vts_ind[
-        (df_vts_ind["Agente Comercial"].notna())
-        & (df_vts_ind["Agente Comercial"] != "Agente Comercial")
-    ].reset_index(drop=True)
+    # df_vts_ind = df_vts_ind[
+    #    (df_vts_ind["Agente Comercial"].notna())
+    #    & (df_vts_ind["Agente Comercial"] != "Agente Comercial")
+    # ].reset_index(drop=True)
 
     columnas_cop = {}
     columnas_kg = {}
@@ -265,24 +268,25 @@ def main():
 
     df_vts_ind = df_vts_ind.iloc[2:].reset_index(drop=True)
 
-    df_vts_ind = df_vts_ind[
-        (df_vts_ind["Código ECOM"].notna())
-        & (df_vts_ind["Código ECOM"] != "Código ECOM")
-    ].reset_index(drop=True)
-
-    #
-    df_vts_ind.rename(columns=columnas_cop, inplace=True)
-    df_vts_ind.rename(columns=columnas_kg, inplace=True)
+    df_vtas_cop = df_vts_ind[
+        ["Agente Comercial", "Código ECOM", "Marca"] + list(columnas_cop.keys())
+    ]
+    df_vtas_cop.rename(columns=columnas_cop, inplace=True)
 
     meses_cop = list(columnas_cop.values())
-    df_cop = df_vts_ind[["Agente Comercial", "Código ECOM", "Marca"] + meses_cop].melt(
+    df_cop = df_vtas_cop[["Agente Comercial", "Código ECOM", "Marca"] + meses_cop].melt(
         id_vars=["Agente Comercial", "Código ECOM", "Marca"],
         var_name="Mes",
         value_name="Venta $",
     )
 
+    df_vtas_kg = df_vts_ind[
+        ["Agente Comercial", "Código ECOM", "Marca"] + list(columnas_kg.keys())
+    ]
+    df_vtas_kg.rename(columns=columnas_kg, inplace=True)
+
     meses_kg = list(columnas_kg.values())
-    df_kg = df_vts_ind[["Agente Comercial", "Código ECOM", "Marca"] + meses_kg].melt(
+    df_kg = df_vtas_kg[["Agente Comercial", "Código ECOM", "Marca"] + meses_kg].melt(
         id_vars=["Agente Comercial", "Código ECOM", "Marca"],
         var_name="Mes",
         value_name="Venta Kg",

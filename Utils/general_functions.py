@@ -70,9 +70,11 @@ def validar_dir(path) -> bool:
 
 def leer_excel_columnas(
     ruta: str,
+    dtype: str = str,
+    nrows: int = 2,
     sheet_name: str = 0,
     columnas: list = None,
-    dtype: str = None,
+    pruebas: str = False,
 ) -> pd.DataFrame:
 
     try:
@@ -87,6 +89,9 @@ def leer_excel_columnas(
 
         if dtype is not None:
             params["dtype"] = dtype
+
+        if pruebas:
+            params["nrows"] = nrows
 
         df = pd.read_excel(ruta, **params)
 
