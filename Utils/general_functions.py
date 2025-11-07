@@ -4,7 +4,10 @@ import os
 from typing import Dict, List
 import pandas as pd
 from pathlib import Path
+import sys
 
+logger.remove()  
+logger.add(sys.stdout, colorize=True, format="<green>{time:HH:mm:ss}</green> | <level>{level: <8}</level> | <level>{message}</level>")
 
 def procesar_configuracion(nom_archivo_configuracion: str) -> dict:
     """Lee un archivo YAML de configuración para un proyecto.
@@ -47,6 +50,7 @@ def validar_archivos(archivos: Dict[str, str]):
         else:
             logger.info(f"Ok: {archivo} encontrado correctamente")
 
+
 def validar_dir(path) -> bool:
     if not os.path.exists(path):  
         logger.error(f"El directorio '{path}' no existe")
@@ -65,7 +69,7 @@ def leer_excel_columnas(
     sheet_name: str = 0,
     columnas: list = None,
     dtype: str = None,
-    nombre_lectura: str = "lectura",
+    
 ) -> pd.DataFrame:
 
     try:
@@ -84,20 +88,20 @@ def leer_excel_columnas(
         df = pd.read_excel(ruta, **params)
 
         logger.info(
-            f"{nombre_lectura} completada con exito. "
+            f"lectura completada con exito. "
             f"Filas: {len(df)}, Columnas: {len(df.columns)}"
         )
 
         return df
 
     except FileNotFoundError:
-        logger.error(f"ERROR en {nombre_lectura}: Archivo no encontrado en {ruta}")
+        logger.error(f"ERROR en lectura: Archivo no encontrado en {ruta}")
         return None
     except KeyError as e:
-        logger.error(f"ERROR en {nombre_lectura}: Columna no existe - {str(e)}")
+        logger.error(f"ERROR en lectura: Columna no existe - {str(e)}")
         return None
     except Exception as e:
-        logger.error(f"ERROR en {nombre_lectura}: {str(e)}")
+        logger.error(f"ERROR en lectura: {str(e)}")
         return None
 
 
@@ -105,13 +109,13 @@ def exportar_a_excel(
     ruta_archivo: str, df: pd.DataFrame, nom_hoja: str = "Hoja1", index: bool = False
 ) -> str:
     """
-    Exporta un DataFrame a un archivo Excel en la ruta completa especificada.
+    Exporta un DataFrame a un archivo Excel o CSV según la extensión.
     Si la carpeta destino no existe, se crea automáticamente.
 
     Args:
-        ruta_archivo (str): Ruta completa del archivo (incluye el nombre y extensión .xlsx).
+        ruta_archivo (str): Ruta completa del archivo (incluye el nombre y extensión .xlsx o .csv).
         df (pd.DataFrame): DataFrame a exportar.
-        nom_hoja (str): Nombre de la hoja dentro del archivo.
+        nom_hoja (str): Nombre de la hoja dentro del archivo (solo para Excel).
         index (bool): Si se incluye o no el índice.
 
     Returns:
@@ -123,20 +127,24 @@ def exportar_a_excel(
         # Crear carpeta si no existe
         ruta.parent.mkdir(parents=True, exist_ok=True)
 
-        # Exportar el DataFrame
-        df.to_excel(ruta, sheet_name=nom_hoja, index=index)
+        # Exportar según extensión
+        if ruta.suffix.lower() == '.csv':
+            df.to_csv(ruta, index=index)
+            logger.info(f"✅ Exportación CSV completada: '{ruta.name}' en '{ruta.parent}'")
+        else:
+            df.to_excel(ruta, sheet_name=nom_hoja, index=index)
+            logger.info(f"✅ Exportación Excel completada: '{ruta.name}' con hoja '{nom_hoja}' en '{ruta.parent}'")
 
-        return f"✅ Exportación completada: '{ruta.name}' con hoja '{nom_hoja}' en '{ruta.parent}'"
+        return f"✅ Exportación completada: '{ruta.name}' en '{ruta.parent}'"
 
     except Exception as e:
         logger.error(f"❌ Error exportando '{ruta_archivo}': {e}")
         raise
 
 
-
 def leer_excels_dir  (
     ruta: str,
-    patron: str,
+    patron: str = None,
     dtype: str = None,
    
 ) -> List[pd.DataFrame]:
@@ -144,19 +152,19 @@ def leer_excels_dir  (
     if not validar_dir(ruta):
         return
   
-    extension = patron.replace("*", "")
+    
 
     archivos = sorted([
         os.path.join(ruta, f)
         for f in os.listdir(ruta)
-        if f.lower().endswith(extension)  
+        if patron is None or f.lower().endswith(patron)
     ])
 
     dataframes = []
 
     for archivo in archivos:
         try:
-            df = pd.leer_excel_columnas(archivo, dtype=str)
+            df = leer_excel_columnas(archivo, dtype=dtype)
             dataframes.append(df)
         except Exception as e:
             raise Exception(f"Error precesando '{archivo}': {e}")
@@ -169,40 +177,7 @@ def leer_excels_dir  (
 
 
 
-def leer_excel_indirecta(
-        path: str,
-        sheet_name: str,
-        dtype: str = None,
-        
 
-) -> List[pd.DataFrame]:
-    
-    if not os.path.exists(path):  
-        raise FileNotFoundError(f"El directorio '{path}' no existe")
-    
-    if not os.path.isdir(path):  
-        raise NotADirectoryError(f"'{path}' no es un directorio")
-    
-
-    archivos = sorted([
-        os.path.join(path, f)
-        for f in os.listdir(path)
-        if os.path.isfile(os.path.join(path, f)) 
-    ])
-
-    dataframes = []
-
-    for archivo in archivos:
-        try:
-            df = pd.read_excel(archivo, dtype=str, sheet_name = sheet_name)
-            dataframes.append(df)
-        except Exception as e:
-            raise Exception(f"Error precesando '{archivo}': {e}")
-        
-    if not dataframes:
-        raise ValueError("No se pudo leer ningún archivo exitosamente")
-    
-    return dataframes
     
         
 

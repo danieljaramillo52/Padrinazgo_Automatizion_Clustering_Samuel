@@ -11,7 +11,7 @@ Insumos:
       separador : "_"
   Path_Directa:
     path: 'Directa/'
-    patron: '*.xlsx'
+    patron: '.xlsx'
   Path_Indirecta:
     path: 'Indirecta/'
     sheet: 'Base'
@@ -29,8 +29,11 @@ Insumos:
 
 
 outputs: 
-  indirecta: "Resultados/Universo_Indirecta_Resultado.xlsx"
-  directa: "Resultados/Universo_Directa_Resultado.xlsx"
+  indirecta_xlsx: "Resultados/Universo_Indirecta_Resultado.xlsx"
+  directa_xlsx: "Resultados/Universo_Directa_Resultado.xlsx"
+  indirecta_csv: "Resultados/Universo_Indirecta_Resultado.csv"
+  directa_csv: "Resultados/Universo_Directa_Resultado.csv"
+
 
 dict_cols:
   universo_directa:
