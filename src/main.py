@@ -288,7 +288,7 @@ def main():
         (df_vts_ind["Código ECOM"] != "Código ECOM")
     ].reset_index(drop=True)
 
-#
+
     df_vts_ind.rename(columns=columnas_cop, inplace=True)
     df_vts_ind.rename(columns=columnas_kg, inplace=True)
 
@@ -313,7 +313,28 @@ def main():
     df_final = df_final[["Agente Comercial", "Código ECOM", "Mes", "Marca", "Venta $", "Venta Kg"]]
     
 
-    
+
+    df_dic_prub = pd.read_excel("Insumos/Directa/BDVentasDirecta_2022.12_11.xlsx", dtype=str)  
+
+    df_dic_prub['Venta $'] = pd.to_numeric(df_dic_prub['Venta $'], errors='coerce')
+    df_dic_prub['Venta Kg'] = pd.to_numeric(df_dic_prub['Venta Kg'], errors='coerce')
+
+    marcas = df_dic_prub['Marca'].unique()
+    df_resutado_prub = df_dic_prub.copy()
+
+
+    for marca in marcas:
+        sum_marca = df_resutado_prub[df_resutado_prub['Marca'] == marca].groupby('Cliente')[['Venta $', 'Venta Kg']].sum()
+        sum_marca.columns = [f'v$ {marca}', f'vKg {marca}']
+        sum_marca = sum_marca.reset_index()
+        df_resutado_prub = df_resutado_prub.merge(sum_marca, on='Cliente', how='left')
+
+
+    df_resutado_prub = df_resutado_prub.fillna(0)
+    df_resutado_prub = df_resutado_prub.drop(columns=['Marca', 'Venta $', 'Venta Kg'])
+
+
+    print(df_resutado_prub.head(10))
  
     
 

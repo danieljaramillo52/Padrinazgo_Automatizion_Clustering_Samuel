@@ -283,3 +283,103 @@ def concatenar_vertical(
 
 
     return df_concatenado
+
+
+def procesar_ventas_indirecta(ruta_archivo):
+    """
+    Procesa el archivo de ventas indirectas y retorna un DataFrame normalizado.
+    
+    Args:
+        ruta_archivo (str): Ruta del archivo Excel de ventas indirectas
+        
+    Returns:
+        pd.DataFrame: DataFrame con columnas [Agente Comercial, Código ECOM, Mes, Marca, Venta $, Venta Kg]
+    """
+    df_vts_ind = pd.read_excel(ruta_archivo)
+    
+    df_vts_ind = df_vts_ind.rename(
+        columns={
+            "Unnamed: 0": "Agente Comercial",
+            "Unnamed: 1": "Código ECOM",
+            "Unnamed: 2": "Marca",
+        },
+        inplace=False,
+    )
+
+    df_vts_ind = df_vts_ind[
+        (df_vts_ind["Agente Comercial"].notna()) & 
+        (df_vts_ind["Agente Comercial"] != "Agente Comercial")
+    ].reset_index(drop=True)
+
+    columnas_cop = {}
+    columnas_kg = {}
+
+    for col in df_vts_ind.columns:
+        if col not in ["Agente Comercial", "Código ECOM", "Marca"]:
+            tipo = df_vts_ind[col].iloc[1]  
+            mes = df_vts_ind[col].iloc[0]  
+        
+            if tipo == "COP":
+                columnas_cop[col] = mes 
+            elif tipo == "KG":
+                columnas_kg[col] = mes
+
+    df_vts_ind = df_vts_ind.iloc[2:].reset_index(drop=True)
+
+    df_vts_ind = df_vts_ind[
+        (df_vts_ind["Código ECOM"].notna()) & 
+        (df_vts_ind["Código ECOM"] != "Código ECOM")
+    ].reset_index(drop=True)
+
+    df_vts_ind.rename(columns=columnas_cop, inplace=True)
+    df_vts_ind.rename(columns=columnas_kg, inplace=True)
+
+    meses_cop = list(columnas_cop.values())
+    df_cop = df_vts_ind[["Agente Comercial", "Código ECOM", "Marca"] + meses_cop].melt(
+        id_vars=["Agente Comercial", "Código ECOM", "Marca"],
+        var_name="Mes",
+        value_name="Venta $"
+    ) 
+
+    meses_kg = list(columnas_kg.values())
+    df_kg = df_vts_ind[["Agente Comercial", "Código ECOM", "Marca"] + meses_kg].melt(
+        id_vars=["Agente Comercial", "Código ECOM", "Marca"],
+        var_name="Mes",
+        value_name="Venta Kg"
+    )
+
+    df_final = pd.merge(df_cop, df_kg, on=["Agente Comercial", "Código ECOM", "Mes", "Marca"])
+    df_final = df_final[["Agente Comercial", "Código ECOM", "Mes", "Marca", "Venta $", "Venta Kg"]]
+    
+    return df_final
+
+def cambiar_ventas_por_marca(df_dic_prub):
+    """
+    Procesa ventas directas agrupando por cliente y calculando totales por marca.
+    
+    Args:
+        df_dic_prub (pd.DataFrame): DataFrame con columnas [Cliente, Mes, Marca, Venta $, Venta Kg]
+        
+    Returns:
+        pd.DataFrame: DataFrame con totales de ventas por marca para cada cliente
+    """
+    df_dic_prub['Venta $'] = pd.to_numeric(df_dic_prub['Venta $'], errors='coerce')
+    df_dic_prub['Venta Kg'] = pd.to_numeric(df_dic_prub['Venta Kg'], errors='coerce')
+
+    marcas = df_dic_prub['Marca'].unique()
+    df_resutado_prub = df_dic_prub.copy()
+
+    for marca in marcas:
+        sum_marca = df_dic_prub[df_dic_prub['Marca'] == marca].groupby('Cliente')[['Venta $', 'Venta Kg']].sum()
+        sum_marca.columns = [f'v$ {marca}', f'vKg {marca}']
+        sum_marca = sum_marca.reset_index()
+        df_resutado_prub = df_resutado_prub.merge(sum_marca, on='Cliente', how='left')
+
+    df_resutado_prub = df_resutado_prub.fillna(0)
+    df_resutado_prub = df_resutado_prub.drop(columns=['Marca', 'Venta $', 'Venta Kg'])
+
+    return df_resutado_prub
+
+
+# USO:
+
