@@ -8,7 +8,9 @@ from Utils import Aplicar_Regla_Negocio_Z1_ZA, Aplicar_regla_Negocio_Socio
 from Utils import transformation_functions as tf
 from loguru import logger
 import importlib
+
 importlib.reload(gf)
+
 
 def main():
     config = gf.procesar_configuracion(
@@ -60,10 +62,7 @@ def main():
         sheet_name="Maestra",
         columnas=list(cols_univ_dir.values()),
         dtype=str,
-    
     )
-
-
 
     print("Leyendo Base Socios\n")
     full_path_socios = os.path.join(
@@ -75,7 +74,6 @@ def main():
         sheet_name="Consolidado",  # Importación de Base socios
         columnas=None,
         dtype=str,
-     
     )
 
     # eliminar duplicados
@@ -133,7 +131,6 @@ def main():
         sheet_name="BD",
         columnas=None,
         dtype=str,
-   
     )
 
     # leemos drv de coordendas
@@ -147,7 +144,6 @@ def main():
         sheet_name="Base",
         columnas=None,
         dtype=str,
-      
     )
 
     df_coord_dir = df_coord[df_coord["Agente Comercial"].isnull()][
@@ -193,150 +189,116 @@ def main():
 
     df_u_indirecta = df_u_indirecta.drop("llave_compuesta", axis=1)
 
-
-    
     gf.exportar_a_excel(
         ruta_archivo=config["outputs"]["directa_xlsx"], df=df_u_directa_completa_Socios
     )
 
-
     gf.exportar_a_excel(
-         ruta_archivo=config["outputs"]["directa_csv"], df = df_u_directa_completa_Socios
+        ruta_archivo=config["outputs"]["directa_csv"], df=df_u_directa_completa_Socios
     )
 
     # INDIRECTA
     gf.exportar_a_excel(
-        ruta_archivo=config["outputs"]["indirecta_xlsx"], df = df_u_indirecta
+        ruta_archivo=config["outputs"]["indirecta_xlsx"], df=df_u_indirecta
     )
-
 
     gf.exportar_a_excel(
-        ruta_archivo=config["outputs"]["indirecta_csv"], df = df_u_indirecta
+        ruta_archivo=config["outputs"]["indirecta_csv"], df=df_u_indirecta
     )
 
- 
-
-    
     #####################################
-    #lectura y concatenación de Insumos/directa
+    # lectura y concatenación de Insumos/directa
     ######################################
-
 
     full_path_dir_directa = os.path.join(
-    config["Insumos"]["path_insumos"],
-    config["Insumos"]["Path_Directa"]["path"]
+        config["Insumos"]["path_insumos"], config["Insumos"]["Path_Directa"]["path"]
     )
+
     patron = config["Insumos"]["Path_Directa"]["patron"]
-    
 
-    dfs_ventas_directa = gf.leer_excels_dir(full_path_dir_directa, patron=patron, dtype=str) #Lista 
+    dfs_ventas_directa = gf.leer_excels_dir(
+        full_path_dir_directa, patron=patron, dtype=str
+    )  # Lista
 
-    df_ventas_directa = tf.concatenar_vertical(dfs_ventas_directa) #Dataframe 
-
+    df_ventas_directa = tf.concatenar_vertical(dfs_ventas_directa)  # Dataframe
 
     ######################################
-    #lectura y concatencioón de Insumos/indirecta
+    # lectura y concatencioón de Insumos/indirecta
     ######################################
-
 
     full_path_dir_indirecta = os.path.join(
-    config["Insumos"]["path_insumos"],
-    config["Insumos"]["Path_Indirecta"]["path"],
+        config["Insumos"]["path_insumos"],
+        config["Insumos"]["Path_Indirecta"]["path"],
     )
-    
+
     sheet_name = config["Insumos"]["Path_Indirecta"]["sheet"]
 
-    dfs_ventas_indirecta = gf.leer_excels_dir(full_path_dir_indirecta, patron = None)
-
-    
+    dfs_ventas_indirecta = gf.leer_excels_dir(full_path_dir_indirecta, patron=patron)
 
     df_vts_ind = pd.read_excel("Insumos/Indirecta/BDVentasIndirecta_2022.12_11.xlsx")
-    
+
+    df_coord_ind = df_vts_ind.copy()
+
     df_vts_ind = df_vts_ind.rename(
-    columns={
-        "Unnamed: 0": "Agente Comercial",
-        "Unnamed: 1": "Código ECOM",
-        "Unnamed: 2": "Marca",
-    },
-    inplace=False,
+        columns={
+            "Unnamed: 0": "Agente Comercial",
+            "Unnamed: 1": "Código ECOM",
+            "Unnamed: 2": "Marca",
+        },
+        inplace=False,
     )
 
-    df_vts_ind = df_vts_ind[
-        (df_vts_ind["Agente Comercial"].notna()) & 
-        (df_vts_ind["Agente Comercial"] != "Agente Comercial")
-    ].reset_index(drop=True)
+    # df_vts_ind = df_vts_ind[
+    #    (df_vts_ind["Agente Comercial"].notna())
+    #    & (df_vts_ind["Agente Comercial"] != "Agente Comercial")
+    # ].reset_index(drop=True)
 
     columnas_cop = {}
     columnas_kg = {}
 
     for col in df_vts_ind.columns:
         if col not in ["Agente Comercial", "Código ECOM", "Marca"]:
-            tipo = df_vts_ind[col].iloc[1]  
-            mes = df_vts_ind[col].iloc[0]  
-        
+            tipo = df_vts_ind[col].iloc[1]
+            mes = df_vts_ind[col].iloc[0]
+
             if tipo == "COP":
-                columnas_cop[col] = mes 
+                columnas_cop[col] = mes
             elif tipo == "KG":
                 columnas_kg[col] = mes
 
- 
     df_vts_ind = df_vts_ind.iloc[2:].reset_index(drop=True)
 
-
-    df_vts_ind = df_vts_ind[
-        (df_vts_ind["Código ECOM"].notna()) & 
-        (df_vts_ind["Código ECOM"] != "Código ECOM")
-    ].reset_index(drop=True)
-
-
-    df_vts_ind.rename(columns=columnas_cop, inplace=True)
-    df_vts_ind.rename(columns=columnas_kg, inplace=True)
-
+    df_vtas_cop = df_vts_ind[
+        ["Agente Comercial", "Código ECOM", "Marca"] + list(columnas_cop.keys())
+    ]
+    df_vtas_cop.rename(columns=columnas_cop, inplace=True)
 
     meses_cop = list(columnas_cop.values())
-    df_cop = df_vts_ind[["Agente Comercial", "Código ECOM", "Marca"] + meses_cop].melt(
+    df_cop = df_vtas_cop[["Agente Comercial", "Código ECOM", "Marca"] + meses_cop].melt(
         id_vars=["Agente Comercial", "Código ECOM", "Marca"],
         var_name="Mes",
-        value_name="Venta $"
-    ) 
-
-
-    meses_kg = list(columnas_kg.values())
-    df_kg = df_vts_ind[["Agente Comercial", "Código ECOM", "Marca"] + meses_kg].melt(
-        id_vars=["Agente Comercial", "Código ECOM", "Marca"],
-        var_name="Mes",
-        value_name="Venta Kg"
+        value_name="Venta $",
     )
 
+    df_vtas_kg = df_vts_ind[
+        ["Agente Comercial", "Código ECOM", "Marca"] + list(columnas_kg.keys())
+    ]
+    df_vtas_kg.rename(columns=columnas_kg, inplace=True)
 
-    df_final = pd.merge(df_cop, df_kg, on=["Agente Comercial", "Código ECOM", "Mes", "Marca"])
-    df_final = df_final[["Agente Comercial", "Código ECOM", "Mes", "Marca", "Venta $", "Venta Kg"]]
-    
+    meses_kg = list(columnas_kg.values())
+    df_kg = df_vtas_kg[["Agente Comercial", "Código ECOM", "Marca"] + meses_kg].melt(
+        id_vars=["Agente Comercial", "Código ECOM", "Marca"],
+        var_name="Mes",
+        value_name="Venta Kg",
+    )
 
+    df_final = pd.merge(
+        df_cop, df_kg, on=["Agente Comercial", "Código ECOM", "Mes", "Marca"]
+    )
+    df_final = df_final[
+        ["Agente Comercial", "Código ECOM", "Mes", "Marca", "Venta $", "Venta Kg"]
+    ]
 
-    df_dic_prub = pd.read_excel("Insumos/Directa/BDVentasDirecta_2022.12_11.xlsx", dtype=str)  
-
-    df_dic_prub['Venta $'] = pd.to_numeric(df_dic_prub['Venta $'], errors='coerce')
-    df_dic_prub['Venta Kg'] = pd.to_numeric(df_dic_prub['Venta Kg'], errors='coerce')
-
-    marcas = df_dic_prub['Marca'].unique()
-    df_resutado_prub = df_dic_prub.copy()
-
-
-    for marca in marcas:
-        sum_marca = df_resutado_prub[df_resutado_prub['Marca'] == marca].groupby('Cliente')[['Venta $', 'Venta Kg']].sum()
-        sum_marca.columns = [f'v$ {marca}', f'vKg {marca}']
-        sum_marca = sum_marca.reset_index()
-        df_resutado_prub = df_resutado_prub.merge(sum_marca, on='Cliente', how='left')
-
-
-    df_resutado_prub = df_resutado_prub.fillna(0)
-    df_resutado_prub = df_resutado_prub.drop(columns=['Marca', 'Venta $', 'Venta Kg'])
-
-
-    print(df_resutado_prub.head(10))
- 
-    
 
 if __name__ == "__main__":
     main()

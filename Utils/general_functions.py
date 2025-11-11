@@ -6,8 +6,13 @@ import pandas as pd
 from pathlib import Path
 import sys
 
-logger.remove()  
-logger.add(sys.stdout, colorize=True, format="<green>{time:HH:mm:ss}</green> | <level>{level: <8}</level> | <level>{message}</level>")
+logger.remove()
+logger.add(
+    sys.stdout,
+    colorize=True,
+    format="<green>{time:HH:mm:ss}</green> | <level>{level: <8}</level> | <level>{message}</level>",
+)
+
 
 def procesar_configuracion(nom_archivo_configuracion: str) -> dict:
     """Lee un archivo YAML de configuración para un proyecto.
@@ -28,7 +33,6 @@ def procesar_configuracion(nom_archivo_configuracion: str) -> dict:
         raise e
 
     return configuracion_yaml
-
 
 
 def validar_archivos(archivos: Dict[str, str]):
@@ -52,24 +56,25 @@ def validar_archivos(archivos: Dict[str, str]):
 
 
 def validar_dir(path) -> bool:
-    if not os.path.exists(path):  
+    if not os.path.exists(path):
         logger.error(f"El directorio '{path}' no existe")
         return False
-    
-    if not os.path.isdir(path):  
+
+    if not os.path.isdir(path):
         logger.error(f"'{path}' no es un directorio")
-        return False 
-    
+        return False
+
     logger.info(f"'{path}' existe y es un directorio válido")
     return True
 
 
 def leer_excel_columnas(
     ruta: str,
+    dtype: str = str,
+    nrows: int = 2,
     sheet_name: str = 0,
     columnas: list = None,
-    dtype: str = None,
-    
+    pruebas: str = False,
 ) -> pd.DataFrame:
 
     try:
@@ -84,6 +89,9 @@ def leer_excel_columnas(
 
         if dtype is not None:
             params["dtype"] = dtype
+
+        if pruebas:
+            params["nrows"] = nrows
 
         df = pd.read_excel(ruta, **params)
 
@@ -128,12 +136,16 @@ def exportar_a_excel(
         ruta.parent.mkdir(parents=True, exist_ok=True)
 
         # Exportar según extensión
-        if ruta.suffix.lower() == '.csv':
+        if ruta.suffix.lower() == ".csv":
             df.to_csv(ruta, index=index)
-            logger.info(f"✅ Exportación CSV completada: '{ruta.name}' en '{ruta.parent}'")
+            logger.info(
+                f"✅ Exportación CSV completada: '{ruta.name}' en '{ruta.parent}'"
+            )
         else:
             df.to_excel(ruta, sheet_name=nom_hoja, index=index)
-            logger.info(f"✅ Exportación Excel completada: '{ruta.name}' con hoja '{nom_hoja}' en '{ruta.parent}'")
+            logger.info(
+                f"✅ Exportación Excel completada: '{ruta.name}' con hoja '{nom_hoja}' en '{ruta.parent}'"
+            )
 
         return f"✅ Exportación completada: '{ruta.name}' en '{ruta.parent}'"
 
@@ -142,23 +154,22 @@ def exportar_a_excel(
         raise
 
 
-def leer_excels_dir  (
+def leer_excels_dir(
     ruta: str,
     patron: str = None,
     dtype: str = None,
-   
 ) -> List[pd.DataFrame]:
-    
+
     if not validar_dir(ruta):
         return
-  
-    
 
-    archivos = sorted([
-        os.path.join(ruta, f)
-        for f in os.listdir(ruta)
-        if patron is None or f.lower().endswith(patron)
-    ])
+    archivos = sorted(
+        [
+            os.path.join(ruta, f)
+            for f in os.listdir(ruta)
+            if patron is None or f.lower().endswith(patron)
+        ]
+    )
 
     dataframes = []
 
@@ -168,16 +179,8 @@ def leer_excels_dir  (
             dataframes.append(df)
         except Exception as e:
             raise Exception(f"Error precesando '{archivo}': {e}")
-        
+
     if not dataframes:
         raise ValueError("No se pudo leer ningún archivo exitosamente")
-    
+
     return dataframes
-            
-
-
-
-
-    
-        
-
