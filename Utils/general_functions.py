@@ -68,6 +68,19 @@ def validar_dir(path) -> bool:
     return True
 
 
+def construir_path(*paths: str) -> str:
+    """
+    Une de forma segura cualquier cantidad de partes de ruta.
+
+    Args:
+        *paths: uno o más fragmentos de ruta (por ejemplo carpetas, nombres de archivo).
+
+    Returns:
+        str: Ruta completa unida con el separador correcto del sistema.
+    """
+    return os.path.join(*paths)
+
+
 def leer_excel_columnas(
     ruta: str,
     dtype: str = str,

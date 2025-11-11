@@ -17,9 +17,18 @@ Insumos:
   Path_Indirecta:
     path: 'Indirecta/'
     sheet: 'Base'
-
+    
   base_socios:
     nom_base: 'BaseSocios.xlsm'
+
+    # Columnas necesarias para el merge entre base socios y universos.
+    columnas_socios_merge:
+      atencion: "Atención"
+      tip_socios:  "Tipo Socios"
+      cod_ven:  "Cod_vend Z1"
+      nom_vend_z1:    "Nom_Vend Z1"
+      cod_vend_z1: "Cod_vend ZA"
+      nom_vend_za: "Nom_Vend ZA"
   
   drv_coordenadas:
     nom_base: 'DriverCoordenadas.xlsx'
@@ -37,7 +46,7 @@ outputs:
   directa_csv: "Resultados/Universo_Directa_Resultado.csv"
 
 
-  dict_cols:
+dict_cols:
     universo_directa:
       funcion_inter: "Función Inter."
       sociedad: "Sociedad"
@@ -48,7 +57,6 @@ outputs:
       nif: "N.I.F."
       poblacion: "Población"
       
-
 
     base_socios:
       id_cliente: "Cod_Cliente"

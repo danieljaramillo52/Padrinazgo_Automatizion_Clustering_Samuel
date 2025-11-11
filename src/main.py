@@ -31,7 +31,7 @@ def main():
 
     # Sleccionar columna única.
     cols_univ_dir["funcion_inter"]
-    cols_univ_dir["sociedad"]    #estos son ejemplos, no cambiar
+    cols_univ_dir["sociedad"]  # estos son ejemplos, no cambiar
     cols_socios["id_cliente"]
 
     logger.info("Validando archivos")
@@ -48,20 +48,14 @@ def main():
 
     gf.validar_archivos(archivos=path_insumos)
 
-
-
-    full_path_directa = os.path.join(
+    full_path_directa = gf.construir_path(
         config["Insumos"]["path_insumos"],
         config["Insumos"]["universo_directa"]["nom_base"],
     )
 
-    sheet_dic = os.path.join(config["Insumos"]["path_insumos"],
-                             config["Insumos"]["universo_directa"]['sheet']
-    )
-
     df_u_directa = gf.leer_excel_columnas(
         ruta=full_path_directa,  # Importacion de indirecta
-        sheet_name=sheet_dic,
+        sheet_name=config["Insumos"]["universo_directa"]["sheet"],
         columnas=list(cols_univ_dir.values()),
         dtype=str,
     )
@@ -80,8 +74,10 @@ def main():
     # eliminar duplicados
     df_u_directa = df_u_directa.drop_duplicates(subset=id_u_dir, keep="first")
     df_Bas_Socio = df_Bas_Socio.drop_duplicates(subset=id_soc, keep="first")
-  
-    path_columnas_socios_merge = list(dict_cols["columnas_socios_merge"].valufes())
+
+    path_columnas_socios_merge = list(
+        config["Insumos"]["base_socios"]["columnas_socios_merge"].values()
+    )
 
     df_u_directa_completa_Socios = df_u_directa.merge(
         df_Bas_Socio[[id_soc] + path_columnas_socios_merge],
@@ -104,7 +100,7 @@ def main():
     )
 
     df_si_socios = df_u_directa_completa_Socios[
-        df_u_directa_completa_Socios["Col_Socio"] == "SI"   #Preguntar
+        df_u_directa_completa_Socios["Col_Socio"] == "SI"  # Preguntar
     ].copy()
     df_no_socios = df_u_directa_completa_Socios[
         df_u_directa_completa_Socios["Col_Socio"] == "NO"
@@ -120,14 +116,9 @@ def main():
         config["Insumos"]["universo_indirecta"]["nom_base"],
     )
 
-    sheet_ind = os.path.join(
-        config["Insumos"]["path_insumos"],
-        config["Insumos"]["universo_indirecta"]["sheet"]
-
-    )
     df_u_indirecta = gf.leer_excel_columnas(
         ruta=full_path_indirecta,
-        sheet_name=sheet_ind,
+        sheet_name=config["Insumos"]["universo_indirecta"]["sheet"],
         columnas=None,
         dtype=str,
     )
@@ -255,8 +246,10 @@ def main():
     columnas_cop = {}
     columnas_kg = {}
 
+    COLS_NO_VTAS = ["Agente Comercial", "Código ECOM", "Marca"]
+
     for col in df_vts_ind.columns:
-        if col not in ["Agente Comercial", "Código ECOM", "Marca"]:
+        if col not in COLS_NO_VTAS:
             tipo = df_vts_ind[col].iloc[1]
             mes = df_vts_ind[col].iloc[0]
 
@@ -267,33 +260,27 @@ def main():
 
     df_vts_ind = df_vts_ind.iloc[2:].reset_index(drop=True)
 
-    df_vtas_cop = df_vts_ind[
-        ["Agente Comercial", "Código ECOM", "Marca"] + list(columnas_cop.keys())
-    ]
+    df_vtas_cop = df_vts_ind[COLS_NO_VTAS + list(columnas_cop.keys())]
     df_vtas_cop.rename(columns=columnas_cop, inplace=True)
 
     meses_cop = list(columnas_cop.values())
-    df_cop = df_vtas_cop[["Agente Comercial", "Código ECOM", "Marca"] + meses_cop].melt(
-        id_vars=["Agente Comercial", "Código ECOM", "Marca"],
+    df_cop = df_vtas_cop[COLS_NO_VTAS + meses_cop].melt(
+        id_vars=COLS_NO_VTAS,
         var_name="Mes",
         value_name="Venta $",
     )
 
-    df_vtas_kg = df_vts_ind[
-        ["Agente Comercial", "Código ECOM", "Marca"] + list(columnas_kg.keys())
-    ]
+    df_vtas_kg = df_vts_ind[COLS_NO_VTAS + list(columnas_kg.keys())]
     df_vtas_kg.rename(columns=columnas_kg, inplace=True)
 
     meses_kg = list(columnas_kg.values())
-    df_kg = df_vtas_kg[["Agente Comercial", "Código ECOM", "Marca"] + meses_kg].melt(
-        id_vars=["Agente Comercial", "Código ECOM", "Marca"],
+    df_kg = df_vtas_kg[COLS_NO_VTAS + meses_kg].melt(
+        id_vars=COLS_NO_VTAS,
         var_name="Mes",
         value_name="Venta Kg",
     )
 
-    df_final = pd.merge(
-        df_cop, df_kg, on=["Agente Comercial", "Código ECOM", "Mes", "Marca"]
-    )
+    df_final = pd.merge(df_cop, df_kg, on=COLS_NO_VTAS + ["Mes"])
     df_final = df_final[
         ["Agente Comercial", "Código ECOM", "Mes", "Marca", "Venta $", "Venta Kg"]
     ]
