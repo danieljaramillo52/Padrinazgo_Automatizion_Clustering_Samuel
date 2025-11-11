@@ -2,8 +2,10 @@ Insumos:
   path_insumos: 'Insumos/'
   universo_directa:
     nom_base: 'Universo Directa.xlsm'
+    sheet: "Maestra"
   universo_indirecta:
     nom_base: 'Universo Indirecta.xlsm'
+    sheet: "BD"
     concatenar_cols : 
       cols : ["r_id_agente_comercial", "r_id_cliente"]
       nueva_columna : "llave_compuesta"
@@ -35,43 +37,53 @@ outputs:
   directa_csv: "Resultados/Universo_Directa_Resultado.csv"
 
 
-dict_cols:
-  universo_directa:
-    funcion_inter: "Función Inter."
-    sociedad: "Sociedad"
-    id_cliente: "Cód. Cliente"
-    cod_local: "Cód. Loc."
-    razon_social: "Razon_Social"
-    nombre_cliente: "Nombre Cliente"
-    nif: "N.I.F."
-    poblacion: "Población"
-    
+  dict_cols:
+    universo_directa:
+      funcion_inter: "Función Inter."
+      sociedad: "Sociedad"
+      id_cliente: "Cód. Cliente"
+      cod_local: "Cód. Loc."
+      razon_social: "Razon_Social"
+      nombre_cliente: "Nombre Cliente"
+      nif: "N.I.F."
+      poblacion: "Población"
+      
 
 
-  base_socios:
-    id_cliente: "Cod_Cliente"
-    atencion: "Atención"
-    tipo_socio: "Tipo Socios"
-    cod_jefe: "Cod_Jefe"
-    nom_jefe: "Nom_Jefe"
-    cod_agente: "Cod_Agente"
-    nom_agente: "Nom_Agente"
-    cod_vendedor: "Cod_vend ZA"
+    base_socios:
+      id_cliente: "Cod_Cliente"
+      atencion: "Atención"
+      tipo_socio: "Tipo Socios"
+      cod_jefe: "Cod_Jefe"
+      nom_jefe: "Nom_Jefe"
+      cod_agente: "Cod_Agente"
+      nom_agente: "Nom_Agente"
+      cod_vendedor: "Cod_vend ZA"
 
 
-  universo_indirecta:
-    id_cliente: "r_id_cliente"
-    nombre: "cv_nombre_completo_cliente"
-    cod_agente: "r_id_agente_comercial"
-    nom_agente: "cv_nombre_agente_comercial"
-    cod_jefe: "Cod_jefe"
-    nom_jefe: "Nombre_jefe"
+    universo_indirecta:
+      id_cliente: "r_id_cliente"
+      nombre: "cv_nombre_completo_cliente"
+      cod_agente: "r_id_agente_comercial"
+      nom_agente: "cv_nombre_agente_comercial"
+      cod_jefe: "Cod_jefe"
+      nom_jefe: "Nombre_jefe"
 
-  drv_coordenadas:
-    id_cliente: "Cliente"
-    Grado_latitud: "Grado latitud"
-    Grado_longitud: "Grad.long."
-    cod_ECOM: "Código ECOM"
-    cod_agen_comer: "Agente Comercial"
+    drv_coordenadas:
+      id_cliente: "Cliente"
+      Grado_latitud: "Grado latitud"
+      Grado_longitud: "Grad.long."
+      cod_ECOM: "Código ECOM"
+      cod_agen_comer: "Agente Comercial"
+
+
+    columnas_socios_merge:
+      atencion: "Atención"
+      tip_socios:  "Tipo Socios"
+      cod_ven:  "Cod_vend Z1"
+      nom_vend_z1:    "Nom_Vend Z1"
+      cod_vend_z1: "Cod_vend ZA"
+      nom_vend_za: "Nom_Vend ZA"
+      
 
   

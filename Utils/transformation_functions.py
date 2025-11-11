@@ -285,7 +285,7 @@ def concatenar_vertical(
     return df_concatenado
 
 
-def procesar_ventas_indirecta(ruta_archivo):
+def cambiar_formato_indirecta(ruta_archivo):
     """
     Procesa el archivo de ventas indirectas y retorna un DataFrame normalizado.
     
@@ -295,63 +295,88 @@ def procesar_ventas_indirecta(ruta_archivo):
     Returns:
         pd.DataFrame: DataFrame con columnas [Agente Comercial, Código ECOM, Mes, Marca, Venta $, Venta Kg]
     """
-    df_vts_ind = pd.read_excel(ruta_archivo)
-    
-    df_vts_ind = df_vts_ind.rename(
-        columns={
-            "Unnamed: 0": "Agente Comercial",
-            "Unnamed: 1": "Código ECOM",
-            "Unnamed: 2": "Marca",
-        },
-        inplace=False,
-    )
-
-    df_vts_ind = df_vts_ind[
-        (df_vts_ind["Agente Comercial"].notna()) & 
-        (df_vts_ind["Agente Comercial"] != "Agente Comercial")
-    ].reset_index(drop=True)
-
-    columnas_cop = {}
-    columnas_kg = {}
-
-    for col in df_vts_ind.columns:
-        if col not in ["Agente Comercial", "Código ECOM", "Marca"]:
-            tipo = df_vts_ind[col].iloc[1]  
-            mes = df_vts_ind[col].iloc[0]  
+    try:
+        # Leer archivo
+        df_vts_ind = pd.read_excel(ruta_archivo)
+        logger.info(f"Archivo leído correctamente: {ruta_archivo}")
         
-            if tipo == "COP":
-                columnas_cop[col] = mes 
-            elif tipo == "KG":
-                columnas_kg[col] = mes
+        # Renombrar columnas principales
+        df_vts_ind = df_vts_ind.rename(
+            columns={
+                "Unnamed: 0": "Agente Comercial",
+                "Unnamed: 1": "Código ECOM",
+                "Unnamed: 2": "Marca",
+            },
+            inplace=False,
+        )
+        
+        # Identificar columnas de COP y KG
+        columnas_cop = {}
+        columnas_kg = {}
+        
+        for col in df_vts_ind.columns:
+            if col not in ["Agente Comercial", "Código ECOM", "Marca"]:
+                tipo = df_vts_ind[col].iloc[1]
+                mes = df_vts_ind[col].iloc[0]
+                
+                if tipo == "COP":
+                    columnas_cop[col] = mes
+                elif tipo == "KG":
+                    columnas_kg[col] = mes
+        
+        # Eliminar las primeras 2 filas de encabezados
+        df_vts_ind = df_vts_ind.iloc[2:].reset_index(drop=True)
+        
+        # Procesar columnas COP
+        df_vtas_cop = df_vts_ind[
+            ["Agente Comercial", "Código ECOM", "Marca"] + list(columnas_cop.keys())
+        ]
+        df_vtas_cop.rename(columns=columnas_cop, inplace=True)
+        
+        meses_cop = list(columnas_cop.values())
+        df_cop = df_vtas_cop[["Agente Comercial", "Código ECOM", "Marca"] + meses_cop].melt(
+            id_vars=["Agente Comercial", "Código ECOM", "Marca"],
+            var_name="Mes",
+            value_name="Venta $",
+        )
+        
+        # Procesar columnas KG
+        df_vtas_kg = df_vts_ind[
+            ["Agente Comercial", "Código ECOM", "Marca"] + list(columnas_kg.keys())
+        ]
+        df_vtas_kg.rename(columns=columnas_kg, inplace=True)
+        
+        meses_kg = list(columnas_kg.values())
+        df_kg = df_vtas_kg[["Agente Comercial", "Código ECOM", "Marca"] + meses_kg].melt(
+            id_vars=["Agente Comercial", "Código ECOM", "Marca"],
+            var_name="Mes",
+            value_name="Venta Kg",
+        )
+        
+        # Merge de COP y KG
+        df_final = pd.merge(
+            df_cop, df_kg, on=["Agente Comercial", "Código ECOM", "Mes", "Marca"]
+        )
+        df_final = df_final[
+            ["Agente Comercial", "Código ECOM", "Mes", "Marca", "Venta $", "Venta Kg"]
+        ]
+        
+        logger.info("Procesamiento de ventas indirectas completado con éxito")
+        return df_final
+        
+    except FileNotFoundError:
+        logger.error(f"Archivo no encontrado: {ruta_archivo}")
+        raise
+    except KeyError as e:
+        logger.error(f"Error: Columna esperada no encontrada - {e}")
+        raise
+    except Exception as e:
+        logger.error(f"Error en el procesamiento de ventas indirectas: {e}")
+        raise
 
-    df_vts_ind = df_vts_ind.iloc[2:].reset_index(drop=True)
 
-    df_vts_ind = df_vts_ind[
-        (df_vts_ind["Código ECOM"].notna()) & 
-        (df_vts_ind["Código ECOM"] != "Código ECOM")
-    ].reset_index(drop=True)
 
-    df_vts_ind.rename(columns=columnas_cop, inplace=True)
-    df_vts_ind.rename(columns=columnas_kg, inplace=True)
 
-    meses_cop = list(columnas_cop.values())
-    df_cop = df_vts_ind[["Agente Comercial", "Código ECOM", "Marca"] + meses_cop].melt(
-        id_vars=["Agente Comercial", "Código ECOM", "Marca"],
-        var_name="Mes",
-        value_name="Venta $"
-    ) 
-
-    meses_kg = list(columnas_kg.values())
-    df_kg = df_vts_ind[["Agente Comercial", "Código ECOM", "Marca"] + meses_kg].melt(
-        id_vars=["Agente Comercial", "Código ECOM", "Marca"],
-        var_name="Mes",
-        value_name="Venta Kg"
-    )
-
-    df_final = pd.merge(df_cop, df_kg, on=["Agente Comercial", "Código ECOM", "Mes", "Marca"])
-    df_final = df_final[["Agente Comercial", "Código ECOM", "Mes", "Marca", "Venta $", "Venta Kg"]]
-    
-    return df_final
 
 def cambiar_ventas_por_marca(df_dic_prub):
     """
@@ -363,23 +388,34 @@ def cambiar_ventas_por_marca(df_dic_prub):
     Returns:
         pd.DataFrame: DataFrame con totales de ventas por marca para cada cliente
     """
-    df_dic_prub['Venta $'] = pd.to_numeric(df_dic_prub['Venta $'], errors='coerce')
-    df_dic_prub['Venta Kg'] = pd.to_numeric(df_dic_prub['Venta Kg'], errors='coerce')
 
-    marcas = df_dic_prub['Marca'].unique()
-    df_resutado_prub = df_dic_prub.copy()
+    try:
+         df_dic_prub['Venta $'] = pd.to_numeric(df_dic_prub['Venta $'], errors='coerce')
+         df_dic_prub['Venta Kg'] = pd.to_numeric(df_dic_prub['Venta Kg'], errors='coerce')
 
-    for marca in marcas:
-        sum_marca = df_dic_prub[df_dic_prub['Marca'] == marca].groupby('Cliente')[['Venta $', 'Venta Kg']].sum()
-        sum_marca.columns = [f'v$ {marca}', f'vKg {marca}']
-        sum_marca = sum_marca.reset_index()
-        df_resutado_prub = df_resutado_prub.merge(sum_marca, on='Cliente', how='left')
+         marcas = df_dic_prub['Marca'].unique()
+         df_resutado_prub = df_dic_prub.copy()
 
-    df_resutado_prub = df_resutado_prub.fillna(0)
-    df_resutado_prub = df_resutado_prub.drop(columns=['Marca', 'Venta $', 'Venta Kg'])
+         if 'Cliente' in df_dic_prub.columns:
+             columna_agrupacion = 'Cliente'
+         else:
+             columna_agrupacion = 'Agente Comercial'
 
-    return df_resutado_prub
+         for marca in marcas:
+            sum_marca = df_dic_prub[df_dic_prub['Marca'] == marca].groupby(columna_agrupacion)[['Venta $', 'Venta Kg']].sum()
+            sum_marca.columns = [f'v$ {marca}', f'vKg {marca}']
+            sum_marca = sum_marca.reset_index()
+            df_resutado_prub = df_resutado_prub.merge(sum_marca, on=columna_agrupacion, how='left')
+
+         df_resutado_prub = df_resutado_prub.fillna(0)
+         df_resutado_prub = df_resutado_prub.drop(columns=['Marca', 'Venta $', 'Venta Kg'])
+         
+         logger.info("se realizo con exito el cambio de formato")
+         return df_resutado_prub
+
+    except Exception as e:
+         logger.error(f"Error en el cambio de formato: {e}")
+         raise
 
 
-# USO:
 

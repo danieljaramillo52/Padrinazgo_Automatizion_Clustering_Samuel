@@ -31,7 +31,7 @@ def main():
 
     # Sleccionar columna única.
     cols_univ_dir["funcion_inter"]
-    cols_univ_dir["sociedad"]
+    cols_univ_dir["sociedad"]    #estos son ejemplos, no cambiar
     cols_socios["id_cliente"]
 
     logger.info("Validando archivos")
@@ -47,24 +47,25 @@ def main():
     }
 
     gf.validar_archivos(archivos=path_insumos)
-    print("\n--------------\n")
 
-    print("Leyendo Universo Directa\n")
-    # pd.read_excel(config['Insumos']['path_insumos'] + config['Insumos']['universo_directa']['nom_base'])
+
 
     full_path_directa = os.path.join(
         config["Insumos"]["path_insumos"],
         config["Insumos"]["universo_directa"]["nom_base"],
     )
 
+    sheet_dic = os.path.join(config["Insumos"]["path_insumos"],
+                             config["Insumos"]["universo_directa"]['sheet']
+    )
+
     df_u_directa = gf.leer_excel_columnas(
         ruta=full_path_directa,  # Importacion de indirecta
-        sheet_name="Maestra",
+        sheet_name=sheet_dic,
         columnas=list(cols_univ_dir.values()),
         dtype=str,
     )
 
-    print("Leyendo Base Socios\n")
     full_path_socios = os.path.join(
         config["Insumos"]["path_insumos"], config["Insumos"]["base_socios"]["nom_base"]
     )
@@ -79,18 +80,11 @@ def main():
     # eliminar duplicados
     df_u_directa = df_u_directa.drop_duplicates(subset=id_u_dir, keep="first")
     df_Bas_Socio = df_Bas_Socio.drop_duplicates(subset=id_soc, keep="first")
-
-    columnas_socios = [
-        "Atención",
-        "Tipo Socios",
-        "Cod_vend Z1",
-        "Nom_Vend Z1",
-        "Cod_vend ZA",
-        "Nom_Vend ZA",
-    ]
+  
+    path_columnas_socios_merge = list(dict_cols["columnas_socios_merge"].valufes())
 
     df_u_directa_completa_Socios = df_u_directa.merge(
-        df_Bas_Socio[[id_soc] + columnas_socios],
+        df_Bas_Socio[[id_soc] + path_columnas_socios_merge],
         left_on=id_u_dir,
         right_on=id_soc,  # Merge de Directa con socios
         how="left",
@@ -110,7 +104,7 @@ def main():
     )
 
     df_si_socios = df_u_directa_completa_Socios[
-        df_u_directa_completa_Socios["Col_Socio"] == "SI"
+        df_u_directa_completa_Socios["Col_Socio"] == "SI"   #Preguntar
     ].copy()
     df_no_socios = df_u_directa_completa_Socios[
         df_u_directa_completa_Socios["Col_Socio"] == "NO"
@@ -126,9 +120,14 @@ def main():
         config["Insumos"]["universo_indirecta"]["nom_base"],
     )
 
+    sheet_ind = os.path.join(
+        config["Insumos"]["path_insumos"],
+        config["Insumos"]["universo_indirecta"]["sheet"]
+
+    )
     df_u_indirecta = gf.leer_excel_columnas(
         ruta=full_path_indirecta,
-        sheet_name="BD",
+        sheet_name=sheet_ind,
         columnas=None,
         dtype=str,
     )
@@ -299,6 +298,9 @@ def main():
         ["Agente Comercial", "Código ECOM", "Mes", "Marca", "Venta $", "Venta Kg"]
     ]
 
+    df_final_1 = tf.cambiar_ventas_por_marca(df_final)
+
 
 if __name__ == "__main__":
+
     main()
