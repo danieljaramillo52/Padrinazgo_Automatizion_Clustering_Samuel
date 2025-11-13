@@ -108,7 +108,7 @@ def main():
 
     df_no_socios = df_no_socios.drop_duplicates(subset="Cód. Cliente", keep="first")
 
-    df_u_directa_completa_Socios = pd.concat([df_si_socios, df_no_socios])
+    df_u_directa_completa_Socios = pd.concat([df_si_socios, df_no_socios])             #Error
 
     # Leemos Universo indirecto
     full_path_indirecta = os.path.join(
@@ -235,7 +235,6 @@ def main():
             "Unnamed: 1": "Código ECOM",
             "Unnamed: 2": "Marca",
         },
-        inplace=False,
     )
 
     # df_vts_ind = df_vts_ind[
@@ -280,12 +279,14 @@ def main():
         value_name="Venta Kg",
     )
 
-    df_final = pd.merge(df_cop, df_kg, on=COLS_NO_VTAS + ["Mes"])
+    df_final = pd.merge(df_cop, df_kg, on=COLS_NO_VTAS + ["Mes"], how="outer")
     df_final = df_final[
         ["Agente Comercial", "Código ECOM", "Mes", "Marca", "Venta $", "Venta Kg"]
     ]
 
-    df_final_1 = tf.cambiar_ventas_por_marca(df_final)
+    df_final.to_excel("Resultados/df_final2.xlsx", index=False)
+
+    df_final = tf.cambiar_ventas_por_marca(df_final)
 
 
 if __name__ == "__main__":
