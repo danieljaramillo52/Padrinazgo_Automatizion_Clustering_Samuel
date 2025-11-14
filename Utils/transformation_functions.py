@@ -737,26 +737,49 @@ class CambiarVtasMarca:
     MARCA = "Marca"
     VENTA_COP = "Venta $"
     VENTA_KG = "Venta Kg"
+    MES = "Mes"
 
     def __init__(self, df: DataFrame):
         self.df = df
 
-    def ejectuar_proceso(self):
+    def ejecutar_proceso(self):
         """Encapsula la ejecución del proceso para agregar las ventas por marca en pesos y kilos."""
 
         # Tratar valores de vtas a numericos
-        df = to_numeric_cols(df=df, cols=[self.VENTA_COP, self.VENTA_KG], inplace=False)
+        df = to_numeric_cols(df=self.df, cols=[self.VENTA_COP, self.VENTA_KG], inplace=False)
 
         # Extraer marcas únicas
         marcas = df[self.MARCA].unique()
-        df_copy = df.copy()
-
+        
         # Tratar ventas nulas.
-        df_copy[[self.VENTA_COP, self.VENTA_KG]] = df_copy[
+        df[[self.VENTA_COP, self.VENTA_KG]] = df[
             [self.VENTA_COP, self.VENTA_KG]
         ].fillna(0)
 
         if "Cliente" in df.columns:
-            columna_agrupacion = "Cliente"
+            columna_agrupacion = ["Cliente", self.MES]
         else:
-            columna_agrupacion = ["Agente Comercial", "Código ECOM"]
+            columna_agrupacion = ["Agente Comercial", "Código ECOM", self.MES]
+
+        # Crear DataFrame base con combinaciones únicas (sin marca)
+        df_resultado = df[columna_agrupacion].drop_duplicates().reset_index(drop=True)
+
+        # Para cada marca, hacer el merge
+        for marca in marcas:
+            sum_marca = (
+                df[df["Marca"] == marca]
+                .groupby(columna_agrupacion)[["Venta $", "Venta Kg"]]
+                .sum()
+                .reset_index()
+            )
+            sum_marca.rename(columns={"Venta $": f"v$ {marca}", "Venta Kg": f"vKg {marca}"}, inplace=True)
+            
+            df_resultado = df_resultado.merge(
+                sum_marca, on=columna_agrupacion, how="left"
+            )
+
+        # Llenar NaN con 0
+        cols_ventas = [col for col in df_resultado.columns if col.startswith(("v$ ", "vKg "))]
+        df_resultado[cols_ventas] = df_resultado[cols_ventas].fillna(0)
+        
+        return df_resultado

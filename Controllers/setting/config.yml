@@ -78,11 +78,14 @@ dict_cols:
       nom_jefe: "Nombre_jefe"
 
     drv_coordenadas:
-      id_cliente: "Cliente"
-      Grado_latitud: "Grado latitud"
-      Grado_longitud: "Grad.long."
-      cod_ECOM: "Código ECOM"
       cod_agen_comer: "Agente Comercial"
+      directa:
+         id_cliente: "Cliente"
+         Grado_latitud: "Grado latitud"
+         Grado_longitud: "Grad.long."
+      indirecta:
+        cod_ECOM: "Código ECOM"
+        cod_agen_comer: "Agente Comercial"
 
 
     columnas_socios_merge:
@@ -92,6 +95,16 @@ dict_cols:
       nom_vend_z1:    "Nom_Vend Z1"
       cod_vend_z1: "Cod_vend ZA"
       nom_vend_za: "Nom_Vend ZA"
+
+    df_socios:
+      col_socio: "Col_Socio"
+      id_cliente: "Cód. Cliente"
+
+
+
+
+
+
       
 
   

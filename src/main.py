@@ -99,14 +99,18 @@ def main():
         df_u_directa_completa_Socios
     )
 
+    col_socio = dict_cols["df_socios"]["col_socio"]
+
     df_si_socios = df_u_directa_completa_Socios[
-        df_u_directa_completa_Socios["Col_Socio"] == "SI"  # Preguntar
+        df_u_directa_completa_Socios[col_socio] == "SI"  # Preguntar
     ].copy()
     df_no_socios = df_u_directa_completa_Socios[
-        df_u_directa_completa_Socios["Col_Socio"] == "NO"
+        df_u_directa_completa_Socios[col_socio] == "NO"
     ].copy()
 
-    df_no_socios = df_no_socios.drop_duplicates(subset="Cód. Cliente", keep="first")
+    id_cliente = dict_cols["df_socios"]["id_cliente"]
+
+    df_no_socios = df_no_socios.drop_duplicates(subset=id_cliente, keep="first")
 
     df_u_directa_completa_Socios = pd.concat([df_si_socios, df_no_socios])             #Error
 
@@ -136,11 +140,17 @@ def main():
         dtype=str,
     )
 
-    df_coord_dir = df_coord[df_coord["Agente Comercial"].isnull()][
-        ["Cliente", "Grado latitud", "Grad.long."]
+    cols_df_coord_dir = dict_cols["drv_coordenadas"]["directa"]
+    agent_com_df_coord = dict_cols["drv_coordenadas"]["cod_agen_comer"]
+    
+    df_coord_dir = df_coord[df_coord[agent_com_df_coord].isnull()][
+        [list(cols_df_coord_dir.values())]
     ]
-    df_coord_ind = df_coord[~df_coord["Agente Comercial"].isnull()][
-        ["Agente Comercial", "Código ECOM", "Grado latitud", "Grad.long."]
+
+    cols_coord_ind = dict_cols["drv_coordenadas"]["indirecta"]
+
+    df_coord_ind = df_coord[~df_coord[agent_com_df_coord].isnull()][
+        [list(cols_coord_ind.values())]
     ]
 
     df_u_directa_completa_Socios = df_u_directa_completa_Socios.drop_duplicates(
@@ -209,6 +219,7 @@ def main():
     dfs_ventas_directa = gf.leer_excels_dir(
         full_path_dir_directa, patron=patron, dtype=str
     )  # Lista
+
 
     df_ventas_directa = tf.concatenar_vertical(dfs_ventas_directa)  # Dataframe
 
@@ -284,10 +295,18 @@ def main():
         ["Agente Comercial", "Código ECOM", "Mes", "Marca", "Venta $", "Venta Kg"]
     ]
 
-    df_final.to_excel("Resultados/df_final2.xlsx", index=False)
+    df_final.to_csv("Resultados/df_final6.csv", index=False)
 
     df_final = tf.cambiar_ventas_por_marca(df_final)
 
+
+    importlib.reload(tf)
+    prueba_vtas_dic = pd.read_excel("Insumos/Directa/BDVentasDirecta_2022.12_11.xlsx")
+
+    procesador = tf.CambiarVtasMarca(df=prueba_vtas_dic)
+    df_resultado_vts_dirc = procesador.ejecutar_proceso()
+
+    df_resultado_vts_dirc.to_excel("Resultados/prueba_vts1.xlsx", index=False)
 
 if __name__ == "__main__":
 
