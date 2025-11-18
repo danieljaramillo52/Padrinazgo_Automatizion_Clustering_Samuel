@@ -16,22 +16,23 @@ Insumos:
     patron: '.xlsx'
   Path_Indirecta:
     path: 'Indirecta/'
-    sheet: 'Base'
-    
+    sheet: 'Base' 
   base_socios:
     nom_base: 'BaseSocios.xlsm'
-
-    # Columnas necesarias para el merge entre base socios y universos.
+    sheet: 'Consolidado'
+    
     columnas_socios_merge:
       atencion: "Atención"
-      tip_socios:  "Tipo Socios"
+      tip_socios:  "Tipo Socios"   # Columnas necesarias para el merge entre base socios y universos.
       cod_ven:  "Cod_vend Z1"
       nom_vend_z1:    "Nom_Vend Z1"
       cod_vend_z1: "Cod_vend ZA"
       nom_vend_za: "Nom_Vend ZA"
+      
   
   drv_coordenadas:
     nom_base: 'DriverCoordenadas.xlsx'
+    sheet: 'Base'
     concatenar_cols : 
       cols : ["Código ECOM", "Agente Comercial"]
       nueva_columna : "llave_compuesta"
@@ -99,6 +100,9 @@ dict_cols:
     df_socios:
       col_socio: "Col_Socio"
       id_cliente: "Cód. Cliente"
+    
+    df_u_directa_completa_Socios:
+      id_cliente: 'Cód. Cliente'
 
 
 

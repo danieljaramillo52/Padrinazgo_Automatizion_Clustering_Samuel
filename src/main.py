@@ -60,18 +60,21 @@ def main():
         dtype=str,
     )
 
-    full_path_socios = os.path.join(
-        config["Insumos"]["path_insumos"], config["Insumos"]["base_socios"]["nom_base"]
+ 
+
+    full_path_socios = gf.construir_path(
+        config["Insumos"]["path_insumos"], 
+        config["Insumos"]["base_socios"]["nom_base"]
     )
 
     df_Bas_Socio = gf.leer_excel_columnas(
         ruta=full_path_socios,
-        sheet_name="Consolidado",  # Importación de Base socios
+        sheet_name=config["Insumos"]['base_socios']['sheet'],  
         columnas=None,
         dtype=str,
     )
 
-    # eliminar duplicados
+    
     df_u_directa = df_u_directa.drop_duplicates(subset=id_u_dir, keep="first")
     df_Bas_Socio = df_Bas_Socio.drop_duplicates(subset=id_soc, keep="first")
 
@@ -85,9 +88,9 @@ def main():
         right_on=id_soc,  # Merge de Directa con socios
         how="left",
     )
-
+    col_client_directa_completa_Socios = dict_cols['df_u_directa_completa_Socios']['id_cliente']
     df_u_directa_completa_Socios = df_u_directa_completa_Socios.drop_duplicates(
-        subset="Cód. Cliente", keep="first"
+        subset=col_client_directa_completa_Socios, keep="first"
     )  # No es necesaria
 
     # Aplicamos reglas de negocio
@@ -112,12 +115,12 @@ def main():
 
     df_no_socios = df_no_socios.drop_duplicates(subset=id_cliente, keep="first")
 
-    df_u_directa_completa_Socios = pd.concat([df_si_socios, df_no_socios])             #Error
+    df_u_directa_completa_Socios = pd.concat([df_si_socios, df_no_socios])          
 
-    # Leemos Universo indirecto
-    full_path_indirecta = os.path.join(
-        config["Insumos"]["path_insumos"],
-        config["Insumos"]["universo_indirecta"]["nom_base"],
+   
+    full_path_indirecta = gf.construir_path(
+        config["Insumos"]["path_insumos"], 
+        config["Insumos"]["universo_indirecta"]["nom_base"]
     )
 
     df_u_indirecta = gf.leer_excel_columnas(
@@ -127,15 +130,15 @@ def main():
         dtype=str,
     )
 
-    # leemos drv de coordendas
-    full_path_dr_coord = os.path.join(
-        config["Insumos"]["path_insumos"],
-        config["Insumos"]["drv_coordenadas"]["nom_base"],
+  
+    full_path_dr_coord = gf.construir_path(
+        config["Insumos"]["path_insumos"], 
+        config["Insumos"]["drv_coordenadas"]["nom_base"]
     )
 
     df_coord = gf.leer_excel_columnas(
         ruta=full_path_dr_coord,
-        sheet_name="Base",
+        sheet_name=config["Insumos"]["drv_coordenadas"]["sheet"],
         columnas=None,
         dtype=str,
     )
@@ -154,11 +157,13 @@ def main():
     ]
 
     df_u_directa_completa_Socios = df_u_directa_completa_Socios.drop_duplicates(
-        subset="Cód. Cliente", keep="first"
+        subset=col_client_directa_completa_Socios, keep="first"
     )
 
+    id_cliente_coord_dir = dict_cols["drv_coordenadas"]["id_cliente"]
+
     df_u_directa_completa_Socios = df_u_directa_completa_Socios.merge(
-        df_coord_dir, left_on="Cód. Cliente", right_on="Cliente", how="left"
+        df_coord_dir, left_on=col_client_directa_completa_Socios, right_on=id_cliente_coord_dir, how="left"
     )
 
     cfg_concat_drv = config["Insumos"]["drv_coordenadas"]["concatenar_cols"]
@@ -210,8 +215,10 @@ def main():
     # lectura y concatenación de Insumos/directa
     ######################################
 
-    full_path_dir_directa = os.path.join(
-        config["Insumos"]["path_insumos"], config["Insumos"]["Path_Directa"]["path"]
+
+    full_path_dir_directa = gf.construir_path(
+        config["Insumos"]["path_insumos"],
+        config["Insumos"]["Path_Directa"]["path"],
     )
 
     patron = config["Insumos"]["Path_Directa"]["patron"]
@@ -221,7 +228,9 @@ def main():
     )  # Lista
 
 
-    df_ventas_directa = tf.concatenar_vertical(dfs_ventas_directa)  # Dataframe
+    dfs_procesadas = [tf.cambiar_ventas_por_marca(df.copy()) for df in dfs_ventas_directa]   #Preguntarle a Daniel 
+    df_ventas_directa = tf.concatenar_vertical(dfs_procesadas)  
+    
 
     ######################################
     # lectura y concatencioón de Insumos/indirecta
@@ -248,10 +257,7 @@ def main():
         },
     )
 
-    # df_vts_ind = df_vts_ind[
-    #    (df_vts_ind["Agente Comercial"].notna())
-    #    & (df_vts_ind["Agente Comercial"] != "Agente Comercial")
-    # ].reset_index(drop=True)
+
 
     columnas_cop = {}
     columnas_kg = {}
@@ -299,14 +305,6 @@ def main():
 
     df_final = tf.cambiar_ventas_por_marca(df_final)
 
-
-    importlib.reload(tf)
-    prueba_vtas_dic = pd.read_excel("Insumos/Directa/BDVentasDirecta_2022.12_11.xlsx")
-
-    procesador = tf.CambiarVtasMarca(df=prueba_vtas_dic)
-    df_resultado_vts_dirc = procesador.ejecutar_proceso()
-
-    df_resultado_vts_dirc.to_excel("Resultados/prueba_vts1.xlsx", index=False)
 
 if __name__ == "__main__":
 

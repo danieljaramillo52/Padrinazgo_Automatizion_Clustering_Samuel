@@ -783,3 +783,63 @@ class CambiarVtasMarca:
         df_resultado[cols_ventas] = df_resultado[cols_ventas].fillna(0)
         
         return df_resultado
+    
+
+def cambiar_form_vts_ind_dataframe(df_vts_ind):
+    """
+    Recibe el DataFrame tal como lo tenías en tu bloque original (df_vts_ind)
+    y devuelve df_final con las columnas:
+    ["Agente Comercial", "Código ECOM", "Mes", "Marca", "Venta $", "Venta Kg"]
+    Lógica idéntica a la que pegaste; no cambié nada.
+    """
+    df_vts_ind = df_vts_ind.rename(
+        columns={
+            "Unnamed: 0": "Agente Comercial",
+            "Unnamed: 1": "Código ECOM",
+            "Unnamed: 2": "Marca",
+        },
+    )
+
+    columnas_cop = {}
+    columnas_kg = {}
+
+    COLS_NO_VTAS = ["Agente Comercial", "Código ECOM", "Marca"]
+
+    for col in df_vts_ind.columns:
+        if col not in COLS_NO_VTAS:
+            tipo = df_vts_ind[col].iloc[1]
+            mes = df_vts_ind[col].iloc[0]
+
+            if tipo == "COP":
+                columnas_cop[col] = mes
+            elif tipo == "KG":
+                columnas_kg[col] = mes
+
+    df_vts_ind = df_vts_ind.iloc[2:].reset_index(drop=True)
+
+    df_vtas_cop = df_vts_ind[COLS_NO_VTAS + list(columnas_cop.keys())]
+    df_vtas_cop.rename(columns=columnas_cop, inplace=True)
+
+    meses_cop = list(columnas_cop.values())
+    df_cop = df_vtas_cop[COLS_NO_VTAS + meses_cop].melt(
+        id_vars=COLS_NO_VTAS,
+        var_name="Mes",
+        value_name="Venta $",
+    )
+
+    df_vtas_kg = df_vts_ind[COLS_NO_VTAS + list(columnas_kg.keys())]
+    df_vtas_kg.rename(columns=columnas_kg, inplace=True)
+
+    meses_kg = list(columnas_kg.values())
+    df_kg = df_vtas_kg[COLS_NO_VTAS + meses_kg].melt(
+        id_vars=COLS_NO_VTAS,
+        var_name="Mes",
+        value_name="Venta Kg",
+    )
+
+    df_final = pd.merge(df_cop, df_kg, on=COLS_NO_VTAS + ["Mes"], how="outer")
+    df_final = df_final[
+        ["Agente Comercial", "Código ECOM", "Mes", "Marca", "Venta $", "Venta Kg"]
+    ]
+
+    return df_final
