@@ -45,6 +45,8 @@ outputs:
   directa_xlsx: "Resultados/Universo_Directa_Resultado.xlsx"
   indirecta_csv: "Resultados/Universo_Indirecta_Resultado.csv"
   directa_csv: "Resultados/Universo_Directa_Resultado.csv"
+  directa_vts_csv: "Resultados/Ventas_Universo_Directa.csv"
+  indirecta_vts_csv: "Resultados/Ventas_Universo_Indirecta.csv"
 
 
 dict_cols:
@@ -80,6 +82,7 @@ dict_cols:
 
     drv_coordenadas:
       cod_agen_comer: "Agente Comercial"
+      llave_compuesta: "llave_compuesta"
       directa:
          id_cliente: "Cliente"
          Grado_latitud: "Grado latitud"
@@ -87,6 +90,8 @@ dict_cols:
       indirecta:
         cod_ECOM: "Código ECOM"
         cod_agen_comer: "Agente Comercial"
+        Grado_latitud: "Grado latitud"
+        Grado_longitud: "Grad.long."
 
 
     columnas_socios_merge:
@@ -103,6 +108,19 @@ dict_cols:
     
     df_u_directa_completa_Socios:
       id_cliente: 'Cód. Cliente'
+
+    df_u_indirecta:
+      cod_agente: 'r_id_agente_comercial'
+      id_cliente: 'r_id_cliente'
+
+
+    df_ventas_directa:
+      id_cliente: 'Cliente'
+
+    df_ventas_indirecta:
+      cod_ECOM: "Código ECOM"
+      cod_agente: "Agente Comercial"
+      
 
 
 

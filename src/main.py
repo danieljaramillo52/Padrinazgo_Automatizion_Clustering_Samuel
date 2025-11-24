@@ -145,22 +145,18 @@ def main():
 
     cols_df_coord_dir = dict_cols["drv_coordenadas"]["directa"]
     agent_com_df_coord = dict_cols["drv_coordenadas"]["cod_agen_comer"]
-    
-    df_coord_dir = df_coord[df_coord[agent_com_df_coord].isnull()][
-        [list(cols_df_coord_dir.values())]
-    ]
+    cols_dir = list(cols_df_coord_dir.values())  
+    df_coord_dir = df_coord[df_coord["Agente Comercial"].isnull()][cols_dir]
 
     cols_coord_ind = dict_cols["drv_coordenadas"]["indirecta"]
-
-    df_coord_ind = df_coord[~df_coord[agent_com_df_coord].isnull()][
-        [list(cols_coord_ind.values())]
-    ]
+    cols_ind = list(cols_coord_ind.values())    
+    df_coord_ind = df_coord[~df_coord[agent_com_df_coord].isnull()][cols_ind]
 
     df_u_directa_completa_Socios = df_u_directa_completa_Socios.drop_duplicates(
         subset=col_client_directa_completa_Socios, keep="first"
     )
 
-    id_cliente_coord_dir = dict_cols["drv_coordenadas"]["id_cliente"]
+    id_cliente_coord_dir = dict_cols["drv_coordenadas"]['directa']["id_cliente"]
 
     df_u_directa_completa_Socios = df_u_directa_completa_Socios.merge(
         df_coord_dir, left_on=col_client_directa_completa_Socios, right_on=id_cliente_coord_dir, how="left"
@@ -186,30 +182,18 @@ def main():
         separador=cfg_concat_un_indir["separador"],
     )
 
+    Llav_comp_col = dict_cols["drv_coordenadas"]["llave_compuesta"]
+    col_lat = dict_cols["drv_coordenadas"]["indirecta"]["Grado_latitud"]
+    col_long = dict_cols["drv_coordenadas"]["indirecta"]["Grado_longitud"]
     df_u_indirecta = df_u_indirecta.merge(
-        df_coord_ind[["llave_compuesta", "Grado latitud", "Grad.long."]],
-        on="llave_compuesta",
+        df_coord_ind[[Llav_comp_col, col_lat, col_long]],
+        on=Llav_comp_col,
         how="left",
     )
 
-    df_u_indirecta = df_u_indirecta.drop("llave_compuesta", axis=1)
+    df_u_indirecta = df_u_indirecta.drop(Llav_comp_col, axis=1)
 
-    gf.exportar_a_excel(
-        ruta_archivo=config["outputs"]["directa_xlsx"], df=df_u_directa_completa_Socios
-    )
 
-    gf.exportar_a_excel(
-        ruta_archivo=config["outputs"]["directa_csv"], df=df_u_directa_completa_Socios
-    )
-
-    # INDIRECTA
-    gf.exportar_a_excel(
-        ruta_archivo=config["outputs"]["indirecta_xlsx"], df=df_u_indirecta
-    )
-
-    gf.exportar_a_excel(
-        ruta_archivo=config["outputs"]["indirecta_csv"], df=df_u_indirecta
-    )
 
     #####################################
     # lectura y concatenación de Insumos/directa
@@ -228,8 +212,8 @@ def main():
     )  # Lista
 
 
-    dfs_procesadas = [tf.cambiar_ventas_por_marca(df.copy()) for df in dfs_ventas_directa]   #Preguntarle a Daniel 
-    df_ventas_directa = tf.concatenar_vertical(dfs_procesadas)  
+    dfs_procesadas_dir = [tf.cambiar_ventas_por_marca(df.copy()) for df in dfs_ventas_directa]   #Preguntarle a Daniel 
+    df_ventas_directa = tf.concatenar_vertical(dfs_procesadas_dir)  
     
 
     ######################################
@@ -240,70 +224,70 @@ def main():
         config["Insumos"]["path_insumos"],
         config["Insumos"]["Path_Indirecta"]["path"],
     )
+    dfs_ventas_indirecta = gf.leer_excels_dir(full_path_dir_indirecta, patron=patron, dtype=str)
+    dfs_formateados_ind = [tf.cambiar_form_vts_ind_dataframe(df.copy()) for df in dfs_ventas_indirecta]    
 
-    sheet_name = config["Insumos"]["Path_Indirecta"]["sheet"]
+    dfs_procesadas_ind= [tf.cambiar_ventas_por_marca(df.copy()) for df in dfs_formateados_ind]
+    dfs_ventas_indirecta = tf.concatenar_vertical(dfs_procesadas_ind)
 
-    dfs_ventas_indirecta = gf.leer_excels_dir(full_path_dir_indirecta, patron=patron)
 
-    df_vts_ind = pd.read_excel("Insumos/Indirecta/BDVentasIndirecta_2022.12_11.xlsx")
+    ###Resultado Directda 
+    id_clie_vtas_dirc = dict_cols["df_ventas_directa"]["id_cliente"]
 
-    df_coord_ind = df_vts_ind.copy()
-
-    df_vts_ind = df_vts_ind.rename(
-        columns={
-            "Unnamed: 0": "Agente Comercial",
-            "Unnamed: 1": "Código ECOM",
-            "Unnamed: 2": "Marca",
-        },
+    df_u_directa_resultado = pd.merge(
+    df_u_directa_completa_Socios, 
+    df_ventas_directa, 
+    left_on= id_cliente_coord_dir,
+    right_on= id_clie_vtas_dirc, 
+    how='left'
     )
 
 
+    ###Resultado indirecta 
 
-    columnas_cop = {}
-    columnas_kg = {}
+     
+    
+    col_id_agente_ind = dict_cols["universo_indirecta"]["cod_agente"]
+    col_id_cliente_ind = dict_cols["universo_indirecta"]["id_cliente"]
 
-    COLS_NO_VTAS = ["Agente Comercial", "Código ECOM", "Marca"]
 
-    for col in df_vts_ind.columns:
-        if col not in COLS_NO_VTAS:
-            tipo = df_vts_ind[col].iloc[1]
-            mes = df_vts_ind[col].iloc[0]
+    col_id_agente_vts_ind = dict_cols["df_ventas_indirecta"]["cod_agente"]
+    col_ECOM_vts_ind = dict_cols["df_ventas_indirecta"]["cod_ECOM"]
 
-            if tipo == "COP":
-                columnas_cop[col] = mes
-            elif tipo == "KG":
-                columnas_kg[col] = mes
+    df_u_indirecta_resultado = pd.merge(
+    df_u_indirecta, 
+    dfs_ventas_indirecta, 
+    left_on=[col_id_agente_ind, col_id_cliente_ind],
+    right_on=[col_id_agente_vts_ind, col_ECOM_vts_ind],
+    how='left'
+    ) 
 
-    df_vts_ind = df_vts_ind.iloc[2:].reset_index(drop=True)
-
-    df_vtas_cop = df_vts_ind[COLS_NO_VTAS + list(columnas_cop.keys())]
-    df_vtas_cop.rename(columns=columnas_cop, inplace=True)
-
-    meses_cop = list(columnas_cop.values())
-    df_cop = df_vtas_cop[COLS_NO_VTAS + meses_cop].melt(
-        id_vars=COLS_NO_VTAS,
-        var_name="Mes",
-        value_name="Venta $",
+    
+    gf.exportar_a_excel(
+        ruta_archivo=config["outputs"]["directa_xlsx"], df=df_u_directa_completa_Socios
     )
 
-    df_vtas_kg = df_vts_ind[COLS_NO_VTAS + list(columnas_kg.keys())]
-    df_vtas_kg.rename(columns=columnas_kg, inplace=True)
-
-    meses_kg = list(columnas_kg.values())
-    df_kg = df_vtas_kg[COLS_NO_VTAS + meses_kg].melt(
-        id_vars=COLS_NO_VTAS,
-        var_name="Mes",
-        value_name="Venta Kg",
+    gf.exportar_a_excel(
+        ruta_archivo=config["outputs"]["directa_csv"], df=df_u_directa_completa_Socios
     )
 
-    df_final = pd.merge(df_cop, df_kg, on=COLS_NO_VTAS + ["Mes"], how="outer")
-    df_final = df_final[
-        ["Agente Comercial", "Código ECOM", "Mes", "Marca", "Venta $", "Venta Kg"]
-    ]
+    # INDIRECTA
+    gf.exportar_a_excel(
+        ruta_archivo=config["outputs"]["indirecta_xlsx"], df=df_u_indirecta
+    )
 
-    df_final.to_csv("Resultados/df_final6.csv", index=False)
+    gf.exportar_a_excel(
+        ruta_archivo=config["outputs"]["indirecta_csv"], df=df_u_indirecta
+    )
+  
 
-    df_final = tf.cambiar_ventas_por_marca(df_final)
+    gf.exportar_a_excel(
+        ruta_archivo=config["outputs"]["directa_vts_csv"], df=df_u_directa_resultado
+    )
+
+    gf.exportar_a_excel(
+        ruta_archivo=config["outputs"]["indirecta_vts_csv"], df=df_u_indirecta_resultado
+    )
 
 
 if __name__ == "__main__":
